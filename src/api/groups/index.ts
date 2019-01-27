@@ -13,6 +13,15 @@ GroupsRouter.get("/", Wrap(async (req, res) => {
     res.RESTSend(groups);
 }));
 
+GroupsRouter.post("/", Wrap(async (req, res) => {
+    ensure(req.user.role >= UserRoles.Administrator, ERR_ACCESS_DENIED);
+    const Groups = getManager().getRepository(Group);
+    const group = new Group();
+    group.name = req.body.name;
+    await Groups.save(group);
+    res.RESTEnd();
+}));
+
 GroupsRouter.get("/:id", Wrap(async (req, res) => {
     const Groups = getManager().getRepository(Group);
     const group = await Groups.findOne(req.params.id);
@@ -26,15 +35,6 @@ GroupsRouter.put("/:id", Wrap(async (req, res) => {
     const Groups = getManager().getRepository(Group);
     const group = await Groups.findOne(req.params.id);
     group.name = req.body.name || group.name;
-    await Groups.save(group);
-    res.RESTEnd();
-}));
-
-GroupsRouter.post("/", Wrap(async (req, res) => {
-    ensure(req.user.role >= UserRoles.Administrator, ERR_ACCESS_DENIED);
-    const Groups = getManager().getRepository(Group);
-    const group = new Group();
-    group.name = req.body.name;
     await Groups.save(group);
     res.RESTEnd();
 }));
