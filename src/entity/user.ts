@@ -1,6 +1,8 @@
 import { pbkdf2Sync, randomBytes } from "crypto";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Group } from "./group";
+import { Member } from "./member";
+import { MinLength, IsEmail, Min, Max } from "class-validator";
 
 export enum UserRoles {
     CommonUser,
@@ -13,30 +15,49 @@ export enum UserRoles {
 export class User {
     @PrimaryGeneratedColumn()
     public id: number;
+
     // 用户名
     @Column()
+    @MinLength(1)
     public name: string;
+
     // 邮箱
     @Column()
+    @IsEmail()
     public email: string;
+
     // 密码散列
     @Column({ select: false })
     public hash: string;
     // 密码盐
     @Column({ select: false })
     public salt: string;
+
     // 用户角色
     @Column()
+    @Min(0)
+    @Max(3)
     public role: UserRoles = UserRoles.CommonUser;
+
     // 内部义工时间计数
     @Column()
-    public innerTimeCount: number = 0;
+    public iTime: number = 0;
     // 外部义工时间计数
     @Column()
-    public outerTimCount: number = 0;
+    public oTime: number = 0;
+    // 万能义工时间计数
+    @Column()
+    public uTime: number = 0;
+
     // 所属用户组
+    @Column()
+    public groupId: number;
     @ManyToOne(() => Group, (group) => group.users)
     public group: Group;
+
+    // 义工历史
+    @OneToMany(() => Member, (member) => member.user)
+    public history: Member[];
 
     public setPassword(password: string) {
         this.salt = randomBytes(16).toString("hex");

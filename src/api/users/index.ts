@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { getManager } from "typeorm";
 import { ERR_ACCESS_DENIED, ERR_BAD_REQUEST } from "../../constant";
-import { Group } from "../../entity/group";
 import { User, UserRoles } from "../../entity/user";
 import { ensure, LoadUserMiddleware, Wrap } from "../util";
 
@@ -9,7 +8,7 @@ export const UsersRouter = Router();
 
 UsersRouter.get("/", Wrap(async (req, res) => {
     const Users = getManager().getRepository(User);
-    const users = await Users.find();
+    const users = await Users.find({ relations: ["group"] });
     res.RESTSend(users);
 }));
 
@@ -30,11 +29,7 @@ UsersRouter.put("/:id", Wrap(async (req, res) => {
     if (req.user.role >= UserRoles.Administrator) {
         user.name = req.body.name || user.name;
         user.role = req.body.role || user.role;
-        if (req.body.group) {
-            const group = await getManager().getRepository(Group).findOne(req.body.group);
-            ensure(group, ERR_BAD_REQUEST);
-            user.group = group;
-        }
+        user.groupId = req.body.groupId || user.groupId;
     }
     await Users.save(user);
     res.RESTEnd();
