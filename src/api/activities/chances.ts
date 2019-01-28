@@ -3,14 +3,13 @@ import { getManager } from "typeorm";
 import { ERR_ACCESS_DENIED, ERR_BAD_REQUEST, ERR_NOT_FOUND } from "../../constant";
 import { Activity, ActivityState } from "../../entity/activity";
 import { Chance } from "../../entity/chance";
-import { UserRoles } from "../../entity/user";
 import { ensure, Wrap } from "../util";
 
 export const ActivityChancesRouter = Router();
 
 // 创建义工分配
 ActivityChancesRouter.post("/:id/chances", Wrap(async (req, res) => {
-    ensure(req.user.role >= UserRoles.Administrator, ERR_ACCESS_DENIED);
+    ensure(req.user.isAdministrator, ERR_ACCESS_DENIED);
 
     const Activities = getManager().getRepository(Activity);
     const activity = await Activities.findOne(req.params.id);
@@ -30,7 +29,7 @@ ActivityChancesRouter.post("/:id/chances", Wrap(async (req, res) => {
 
 // 更新义工分配
 ActivityChancesRouter.put("/:id/chances/:cid", Wrap(async (req, res) => {
-    ensure(req.user.role >= UserRoles.Administrator, ERR_ACCESS_DENIED);
+    ensure(req.user.isAdministrator, ERR_ACCESS_DENIED);
 
     const Activities = getManager().getRepository(Activity);
     const activity = await Activities.findOne(req.params.id);
@@ -51,7 +50,7 @@ ActivityChancesRouter.put("/:id/chances/:cid", Wrap(async (req, res) => {
 
 // 删除义工分配
 ActivityChancesRouter.delete("/:id/chances/:cid", Wrap(async (req, res) => {
-    ensure(req.user.role >= UserRoles.Administrator, ERR_ACCESS_DENIED);
+    ensure(req.user.isAdministrator, ERR_ACCESS_DENIED);
 
     const Activities = getManager().getRepository(Activity);
     const activity = await Activities.findOne(req.params.id);

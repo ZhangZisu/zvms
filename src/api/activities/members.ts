@@ -67,3 +67,5 @@ ActivityMembersRouter.post("/:id/member/:mid", Wrap(async (req, res) => {
 
     res.RESTEnd();
 }));
+
+// ActivityMembersRouter.put("/:id/member/")

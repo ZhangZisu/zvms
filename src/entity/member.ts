@@ -9,6 +9,9 @@ export class Member {
     @PrimaryGeneratedColumn()
     public id: number;
 
+    @Column("text")
+    public comment: string;
+
     // 对应用户
     @Column({ nullable: false })
     public userId: number;

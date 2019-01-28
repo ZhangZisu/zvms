@@ -4,13 +4,6 @@ import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "ty
 import { Group } from "./group";
 import { Member } from "./member";
 
-export enum UserRoles {
-    CommonUser,
-    Secretary,
-    Manager,
-    Administrator,
-}
-
 @Entity()
 export class User {
     @PrimaryGeneratedColumn()
@@ -35,9 +28,13 @@ export class User {
 
     // 用户角色
     @Column()
-    @Min(0)
-    @Max(3)
-    public role: UserRoles = UserRoles.CommonUser;
+    public isSecretary: boolean = false;
+    @Column()
+    public isManager: boolean = false;
+    @Column()
+    public isAdministrator: boolean = false;
+    @Column()
+    public isProvider: boolean = false;
 
     // 内部义工时间计数
     @Column()
@@ -48,6 +45,9 @@ export class User {
     // 万能义工时间计数
     @Column()
     public uTime: number = 0;
+
+    @Column()
+    public removed: boolean = false;
 
     // 所属用户组
     @Column()

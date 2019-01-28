@@ -2,7 +2,6 @@ import { Router } from "express";
 import { getManager } from "typeorm";
 import { ERR_ACCESS_DENIED, ERR_BAD_REQUEST, ERR_NOT_FOUND } from "../../constant";
 import { Activity, ActivityState } from "../../entity/activity";
-import { UserRoles } from "../../entity/user";
 import { ensure, LoadUserMiddleware, Wrap } from "../util";
 import { ActivityChancesRouter } from "./chances";
 import { ActivityMembersRouter } from "./members";
@@ -29,32 +28,35 @@ ActivitiesRouter.use(LoadUserMiddleware);
 
 // 创建活动
 ActivitiesRouter.post("/", Wrap(async (req, res) => {
-    ensure(req.user.role >= UserRoles.Administrator, ERR_ACCESS_DENIED);
+    ensure(req.user.isAdministrator || (req.user.isProvider && req.userId === req.body.ownerId), ERR_ACCESS_DENIED);
 
     const Activities = getManager().getRepository(Activity);
     const activity = new Activity();
     activity.name = req.body.name;
     activity.description = req.body.description;
+    activity.owner = req.user;
     await Activities.save(activity);
     res.RESTSend(activity.id);
 }));
 
 // 更新活动
 ActivitiesRouter.put("/:id", Wrap(async (req, res) => {
-    ensure(req.user.role >= UserRoles.Administrator, ERR_ACCESS_DENIED);
+    ensure(req.user.isAdministrator || (req.user.isProvider && req.userId === req.body.ownerId), ERR_ACCESS_DENIED);
 
     const Activities = getManager().getRepository(Activity);
     const activity = await Activities.findOne(req.params.id);
+    ensure(req.user.isAdministrator || req.userId === activity.ownerId, ERR_ACCESS_DENIED);
     ensure(activity, ERR_NOT_FOUND);
-    activity.name = req.body.name || activity.name;
-    activity.description = req.body.description || activity.description;
+    activity.name = req.body.name;
+    activity.description = req.body.description;
+    activity.ownerId = req.body.ownerId;
     await Activities.save(activity);
     res.RESTEnd();
 }));
 
 // 更改活动状态
 ActivitiesRouter.post("/:id/changestate", Wrap(async (req, res) => {
-    ensure(req.user.role >= UserRoles.Administrator, ERR_ACCESS_DENIED);
+    ensure(req.user.isAdministrator, ERR_ACCESS_DENIED);
 
     const Activities = getManager().getRepository(Activity);
     const activity = await Activities.findOne(req.params.id);

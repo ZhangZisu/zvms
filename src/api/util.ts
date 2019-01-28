@@ -11,7 +11,7 @@ export type RESTResponse = Response & {
 };
 
 export type RESTRequest = Request & {
-    userID?: number;
+    userId?: number;
     user?: User;
 };
 
@@ -51,13 +51,13 @@ export const TokenParseMiddleware = Wrap((req, res, next) => {
     const token = req.headers["x-access-token"] || (req.body && req.body.access_token) || (req.query && req.query.access_token);
     if (token) {
         const decoded = verify(token, SEC_SECRET) as any;
-        req.userID = decoded.id;
+        req.userId = decoded.id;
     }
     return next();
 });
 
 export const LoadUserMiddleware = Wrap(async (req, res, next) => {
-    ensure(req.userID, ERR_ACCESS_DENIED);
-    ensure(req.user = await getManager().getRepository(User).findOne(req.userID), ERR_ACCESS_DENIED);
+    ensure(req.userId, ERR_ACCESS_DENIED);
+    ensure(req.user = await getManager().getRepository(User).findOne(req.userId), ERR_ACCESS_DENIED);
     return next();
 });
