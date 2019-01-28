@@ -1,9 +1,10 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Activity } from "./activity";
 import { Member } from "./member";
 import { User } from "./user";
 
 @Entity()
+@Index(["leaderId", "activityId"], { unique: true })
 export class Team {
     @PrimaryGeneratedColumn()
     public id: number;

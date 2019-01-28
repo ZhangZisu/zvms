@@ -1,9 +1,10 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Activity } from "./activity";
 import { Team } from "./team";
 import { User } from "./user";
 
 @Entity()
+@Index(["userId", "activityId"], { unique: true })
 export class Member {
     @PrimaryGeneratedColumn()
     public id: number;

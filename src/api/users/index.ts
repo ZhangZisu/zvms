@@ -8,13 +8,13 @@ export const UsersRouter = Router();
 
 UsersRouter.get("/", Wrap(async (req, res) => {
     const Users = getManager().getRepository(User);
-    const users = await Users.find({ relations: ["group"] });
+    const users = await Users.find();
     res.RESTSend(users);
 }));
 
 UsersRouter.get("/:id", Wrap(async (req, res) => {
     const Users = getManager().getRepository(User);
-    const user = await Users.findOne(req.params.id);
+    const user = await Users.findOne(req.params.id, { relations: ["group", "history"] });
     res.send(user);
 }));
 

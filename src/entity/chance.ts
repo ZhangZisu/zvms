@@ -1,7 +1,7 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, MinKey } from "typeorm";
+import { Max, Min } from "class-validator";
+import { Column, Entity, Index, ManyToOne, MinKey, PrimaryGeneratedColumn } from "typeorm";
 import { Activity } from "./activity";
 import { Group } from "./group";
-import { Min, Max } from "class-validator";
 
 export enum ChanceType {
     // 公开报名
@@ -9,16 +9,18 @@ export enum ChanceType {
     Public,
     // 非公开报名
     // 由团支书钦点
-    Private
+    Private,
 }
 
 @Entity()
+@Index(["activityId", "groupId"])
 export class Chance {
     @PrimaryGeneratedColumn()
     public id: number;
 
     // 容量
     @Column()
+    @Min(1)
     public quota: number;
 
     // 是否允许学生自由报名
@@ -29,10 +31,14 @@ export class Chance {
     public type: ChanceType = ChanceType.Private;
 
     // 对应用户组
+    @Column({ nullable: false })
+    public groupId: number;
     @ManyToOne(() => Group, (group) => group.chances)
     public group: Group;
 
     // 对应活动
+    @Column({ nullable: false })
+    public activityId: number;
     @ManyToOne(() => Activity, (activity) => activity.chances)
     public activity: Activity;
 }

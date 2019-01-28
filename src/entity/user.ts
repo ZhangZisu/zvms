@@ -1,8 +1,8 @@
+import { IsEmail, Max, Min, MinLength } from "class-validator";
 import { pbkdf2Sync, randomBytes } from "crypto";
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Group } from "./group";
 import { Member } from "./member";
-import { MinLength, IsEmail, Min, Max } from "class-validator";
 
 export enum UserRoles {
     CommonUser,

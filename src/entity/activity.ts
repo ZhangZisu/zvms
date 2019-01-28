@@ -1,16 +1,16 @@
+import { Max, Min, MinLength } from "class-validator";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Chance } from "./chance";
 import { Member } from "./member";
 import { Team } from "./team";
-import { MinLength, Min, Max } from "class-validator";
 
 export enum ActivityState {
     PendingApprove,
     Approved,
     Registration,
     PendingVerify,
-    Finished
-};
+    Finished,
+}
 
 @Entity()
 export class Activity {
@@ -30,7 +30,7 @@ export class Activity {
     @Column()
     @Min(0)
     @Max(4)
-    public state: ActivityState;
+    public state: ActivityState = ActivityState.PendingApprove;
 
     // 活动报名分配
     @OneToMany(() => Chance, (chance) => chance.activity)

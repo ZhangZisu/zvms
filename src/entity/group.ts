@@ -1,7 +1,7 @@
+import { MinLength } from "class-validator";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Chance } from "./chance";
 import { User } from "./user";
-import { MinLength } from "class-validator";
 
 @Entity()
 export class Group {
