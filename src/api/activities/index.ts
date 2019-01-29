@@ -32,7 +32,7 @@ ActivitiesRouter.post("/", Wrap(async (req, res) => {
     activity.name = req.body.name;
     activity.description = req.body.description;
     activity.owner = req.user;
-    await Activity.save(activity);
+    await activity.save();
     res.RESTSend(activity.id);
 }));
 
@@ -46,7 +46,7 @@ ActivitiesRouter.put("/:id", Wrap(async (req, res) => {
     activity.name = req.body.name;
     activity.description = req.body.description;
     activity.ownerId = req.body.ownerId;
-    await Activity.save(activity);
+    await activity.save();
     res.RESTEnd();
 }));
 
@@ -58,7 +58,7 @@ ActivitiesRouter.post("/:id/changestate", Wrap(async (req, res) => {
     ensure(activity, ERR_NOT_FOUND);
     ensure(activity.state !== ActivityState.Finished, ERR_BAD_REQUEST);
     activity.state++;
-    await Activity.save(activity);
+    await activity.save();
     res.RESTEnd();
 }));
 

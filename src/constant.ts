@@ -11,3 +11,6 @@ export const SEC_SECRET = "666233";
 
 // Path
 export const PTH_PACKAGE = join(__dirname, "..", "package.json");
+
+// Defaults
+export const DEF_DESCRIPTION = "没有描述";

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { ActivitiesRouter } from "./activities";
 import { AuthRouter } from "./auth";
 import { GroupsRouter } from "./groups";
 import { UsersRouter } from "./users";
@@ -10,5 +11,6 @@ ApiRouter.use(RESTMiddleware);
 ApiRouter.use(TokenParseMiddleware);
 
 ApiRouter.use("/auth", AuthRouter);
-ApiRouter.use("/user", UsersRouter);
-ApiRouter.use("/group", GroupsRouter);
+ApiRouter.use("/users", UsersRouter);
+ApiRouter.use("/groups", GroupsRouter);
+ApiRouter.use("/activities", ActivitiesRouter);

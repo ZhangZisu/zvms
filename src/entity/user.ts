@@ -1,6 +1,7 @@
 import { IsEmail, Max, Min, MinLength } from "class-validator";
 import { pbkdf2Sync, randomBytes } from "crypto";
 import { BaseEntity, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { DEF_DESCRIPTION } from "../constant";
 import { Group } from "./group";
 import { Member } from "./member";
 
@@ -19,7 +20,7 @@ export class User extends BaseEntity {
 
     // 描述
     @Column("text")
-    public description: string;
+    public description: string = DEF_DESCRIPTION;
 
     // 密码散列
     @Column({ select: false })

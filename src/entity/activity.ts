@@ -1,5 +1,6 @@
 import { Max, Min, MinLength } from "class-validator";
 import { BaseEntity, Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { DEF_DESCRIPTION } from "../constant";
 import { Chance } from "./chance";
 import { Member } from "./member";
 import { Team } from "./team";
@@ -24,7 +25,7 @@ export class Activity extends BaseEntity {
 
     // 活动描述
     @Column("text")
-    public description: string;
+    public description: string = DEF_DESCRIPTION;
 
     // 活动状态
     @Column() @Min(0) @Max(4)
