@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { getManager } from "typeorm";
 import { ERR_ACCESS_DENIED, ERR_BAD_REQUEST, ERR_NOT_FOUND } from "../../constant";
 import { Activity, ActivityState } from "../../entity/activity";
 import { Chance } from "../../entity/chance";
@@ -7,65 +6,84 @@ import { Member } from "../../entity/member";
 import { Team } from "../../entity/team";
 import { User } from "../../entity/user";
 import { ensure, Wrap } from "../util";
-import { canOperate } from "./utils";
+import { canOperateDuringReg } from "./utils";
 
 export const ActivityMembersRouter = Router();
 
 // 创建义工成员
 ActivityMembersRouter.post("/:id/member", Wrap(async (req, res) => {
-    const Activities = getManager().getRepository(Activity);
-    const activity = await Activities.findOne(req.params.id);
+    const activity = await Activity.findOne(req.params.id);
     ensure(activity, ERR_NOT_FOUND);
     ensure(activity.state === ActivityState.Registration, ERR_BAD_REQUEST);
 
-    const Users = getManager().getRepository(User);
-    const user = await Users.findOne(req.body.userId);
+    const user = await User.findOne(req.body.userId);
     ensure(user, ERR_NOT_FOUND);
-    const Chances = getManager().getRepository(Chance);
-    const chance = await Chances.findOne({ groupId: user.groupId, activityId: activity.id });
+    const chance = await Chance.findOne({ groupId: user.groupId, activityId: activity.id });
     ensure(chance, ERR_ACCESS_DENIED);
     ensure(chance.quota, ERR_ACCESS_DENIED);
-    ensure(canOperate(req.user, user, chance.type), ERR_ACCESS_DENIED);
+    ensure(canOperateDuringReg(req.user, user, chance.type), ERR_ACCESS_DENIED);
 
-    const Teams = getManager().getRepository(Team);
-    const team = await Teams.findOne(req.body.teamId);
+    const team = await Team.findOne(req.body.teamId);
     ensure(team, ERR_NOT_FOUND);
     ensure(team.activityId === activity.id, ERR_BAD_REQUEST);
 
-    const Members = getManager().getRepository(Member);
     const member = new Member();
     member.user = user;
     member.team = team;
     member.activity = activity;
 
-    await Members.save(member);
+    await member.save();
     chance.quota--;
-    await Chances.save(chance);
+    await chance.save();
 
-    res.RESTEnd();
+    res.RESTSend(member.id);
 }));
 
+// 获取义工成员
+
 // 删除义工成员
-ActivityMembersRouter.post("/:id/member/:mid", Wrap(async (req, res) => {
-    const Activities = getManager().getRepository(Activity);
-    const activity = await Activities.findOne(req.params.id);
+ActivityMembersRouter.delete("/:id/member/:mid", Wrap(async (req, res) => {
+    const activity = await Activity.findOne(req.params.id);
     ensure(activity, ERR_NOT_FOUND);
     ensure(activity.state === ActivityState.Registration, ERR_BAD_REQUEST);
 
-    const Members = getManager().getRepository(Member);
-    const member = await Members.findOne(req.params.mid, { relations: ["user"] });
+    const member = await Member.findOne(req.params.mid, { relations: ["user"] });
     ensure(member, ERR_NOT_FOUND);
     ensure(member.activityId === activity.id, ERR_BAD_REQUEST);
 
-    const Chances = getManager().getRepository(Chance);
-    const chance = await Chances.findOne({ groupId: member.user.groupId, activityId: activity.id });
-    ensure(canOperate(req.user, member.user, chance.type), ERR_ACCESS_DENIED);
+    const chance = await Chance.findOne({ groupId: member.user.groupId, activityId: activity.id });
+    ensure(canOperateDuringReg(req.user, member.user, chance.type), ERR_ACCESS_DENIED);
 
-    await Members.remove(member);
+    await member.remove();
     chance.quota++;
-    await Chances.save(chance);
+    await chance.save();
 
     res.RESTEnd();
 }));
 
-// ActivityMembersRouter.put("/:id/member/")
+// 更新某个成员
+ActivityMembersRouter.put("/:id/member/:mid", Wrap(async (req, res) => {
+    const activity = await Activity.findOne(req.params.id);
+    ensure(activity, ERR_NOT_FOUND);
+    ensure(activity.state === ActivityState.PendingVerify, ERR_BAD_REQUEST);
+
+    const member = await Member.findOne(req.params.mid, { relations: ["team"] });
+    ensure(member, ERR_NOT_FOUND);
+    ensure(member.activityId === activity.id, ERR_BAD_REQUEST);
+    ensure(req.userId === member.team.leaderId || req.user.isAdministrator || req.user.isManager, ERR_ACCESS_DENIED);
+
+    member.comment = req.body.comment;
+    member.leaderReview = req.body.leaderReview;
+    if (req.user.isManager || req.user.isAdministrator) {
+        member.iTime = req.body.iTime;
+        member.oTime = req.body.oTime;
+        member.uTime = req.body.uTime;
+        member.managerReview = req.body.managerReview;
+        if (req.user.isAdministrator) {
+            member.administratorReview = req.body.administratorReview;
+        }
+    }
+    await member.save();
+
+    res.RESTEnd();
+}));

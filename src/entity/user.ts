@@ -1,11 +1,11 @@
 import { IsEmail, Max, Min, MinLength } from "class-validator";
 import { pbkdf2Sync, randomBytes } from "crypto";
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Group } from "./group";
 import { Member } from "./member";
 
 @Entity()
-export class User {
+export class User extends BaseEntity {
     @PrimaryGeneratedColumn()
     public id: number;
 

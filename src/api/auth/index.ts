@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { sign } from "jsonwebtoken";
-import { getManager } from "typeorm";
 import { ERR_ACCESS_DENIED, ERR_NOT_FOUND, SEC_SECRET } from "../../constant";
 import { User } from "../../entity/user";
 import { ensure, Wrap } from "../util";
@@ -9,8 +8,7 @@ export const AuthRouter = Router();
 
 // 登录签发token
 AuthRouter.post("/login", Wrap(async (req, res) => {
-    const Users = getManager().getRepository(User);
-    const user = await Users.createQueryBuilder("user")
+    const user = await User.createQueryBuilder("user")
         .where("user.id = :username OR user.name = :username", { username: req.body.username })
         .addSelect("user.hash")
         .addSelect("user.salt")

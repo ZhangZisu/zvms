@@ -1,10 +1,10 @@
 import { MinLength } from "class-validator";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Chance } from "./chance";
 import { User } from "./user";
 
 @Entity()
-export class Group {
+export class Group extends BaseEntity {
     @PrimaryGeneratedColumn()
     public id: number;
 

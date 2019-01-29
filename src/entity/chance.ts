@@ -1,5 +1,5 @@
 import { Max, Min } from "class-validator";
-import { Column, Entity, Index, ManyToOne, MinKey, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, Index, ManyToOne, MinKey, PrimaryGeneratedColumn } from "typeorm";
 import { Activity } from "./activity";
 import { Group } from "./group";
 
@@ -14,7 +14,7 @@ export enum ChanceType {
 
 @Entity()
 @Index(["activityId", "groupId"])
-export class Chance {
+export class Chance extends BaseEntity {
     @PrimaryGeneratedColumn()
     public id: number;
 

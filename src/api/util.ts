@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
 import { verify } from "jsonwebtoken";
-import { getManager } from "typeorm";
 import { ERR_ACCESS_DENIED, ERR_UNKNOW, SEC_SECRET } from "../constant";
 import { User } from "../entity/user";
 
@@ -58,6 +57,6 @@ export const TokenParseMiddleware = Wrap((req, res, next) => {
 
 export const LoadUserMiddleware = Wrap(async (req, res, next) => {
     ensure(req.userId, ERR_ACCESS_DENIED);
-    ensure(req.user = await getManager().getRepository(User).findOne(req.userId), ERR_ACCESS_DENIED);
+    ensure(req.user = await User.findOne(req.userId), ERR_ACCESS_DENIED);
     return next();
 });

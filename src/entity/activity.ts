@@ -1,5 +1,5 @@
 import { Max, Min, MinLength } from "class-validator";
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Chance } from "./chance";
 import { Member } from "./member";
 import { Team } from "./team";
@@ -14,7 +14,7 @@ export enum ActivityState {
 }
 
 @Entity()
-export class Activity {
+export class Activity extends BaseEntity {
     @PrimaryGeneratedColumn()
     public id: number;
 
@@ -32,6 +32,10 @@ export class Activity {
     @Min(0)
     @Max(4)
     public state: ActivityState = ActivityState.PendingApprove;
+
+    // 是否计算过贡献
+    @Column()
+    public computed: boolean = false;
 
     @Column({ nullable: false })
     public ownerId: number;

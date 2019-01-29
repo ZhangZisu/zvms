@@ -7,7 +7,7 @@ import prompts = require("prompts");
 import { generate } from "randomstring";
 import { createConnection } from "typeorm";
 import { PTH_PACKAGE } from "../constant";
-import { User, UserRoles } from "../entity/user";
+import { User } from "../entity/user";
 
 const version = JSON.parse(readFileSync(PTH_PACKAGE).toString()).version;
 
@@ -18,12 +18,16 @@ commander
     .command("init")
     .description("Initialize the system")
     .action(() => {
+        // tslint:disable-next-line: no-floating-promises
         createConnection().then(async (connection) => {
             const user = new User();
             user.name = "Administrator";
             user.email = "admin@zhangzisu.cn";
             user.setPassword("Administrator");
-            user.role = UserRoles.Administrator;
+            user.isAdministrator = true;
+            user.isManager = true;
+            user.isProvider = true;
+            user.isSecretary = true;
             await connection.getRepository(User).save(user);
             console.log("Done");
         });

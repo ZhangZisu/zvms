@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { getManager } from "typeorm";
 import { ERR_ACCESS_DENIED, ERR_BAD_REQUEST, ERR_NOT_FOUND } from "../../constant";
 import { Activity, ActivityState } from "../../entity/activity";
 import { Chance } from "../../entity/chance";
@@ -11,18 +10,16 @@ export const ActivityChancesRouter = Router();
 ActivityChancesRouter.post("/:id/chances", Wrap(async (req, res) => {
     ensure(req.user.isAdministrator, ERR_ACCESS_DENIED);
 
-    const Activities = getManager().getRepository(Activity);
-    const activity = await Activities.findOne(req.params.id);
+    const activity = await Activity.findOne(req.params.id);
     ensure(activity, ERR_NOT_FOUND);
     ensure(activity.state === ActivityState.Approved, ERR_BAD_REQUEST);
 
-    const Chances = getManager().getRepository(Chance);
     const chance = new Chance();
     chance.quota = req.body.quota;
     chance.type = req.body.type;
     chance.groupId = req.body.groupId;
     chance.activity = activity;
-    await Chances.save(chance);
+    await chance.save();
 
     res.RESTSend(chance.id);
 }));
@@ -31,19 +28,17 @@ ActivityChancesRouter.post("/:id/chances", Wrap(async (req, res) => {
 ActivityChancesRouter.put("/:id/chances/:cid", Wrap(async (req, res) => {
     ensure(req.user.isAdministrator, ERR_ACCESS_DENIED);
 
-    const Activities = getManager().getRepository(Activity);
-    const activity = await Activities.findOne(req.params.id);
+    const activity = await Activity.findOne(req.params.id);
     ensure(activity, ERR_NOT_FOUND);
     ensure(activity.state === ActivityState.Approved, ERR_BAD_REQUEST);
 
-    const Chances = getManager().getRepository(Chance);
-    const chance = await Chances.findOne(req.params.cid);
+    const chance = await Chance.findOne(req.params.cid);
     ensure(chance, ERR_NOT_FOUND);
     ensure(chance.activityId === activity.id, ERR_BAD_REQUEST);
     chance.quota = req.body.quota;
     chance.type = req.body.type;
     chance.groupId = req.body.groupId;
-    await Chances.save(chance);
+    await chance.save();
 
     res.RESTEnd();
 }));
@@ -52,16 +47,14 @@ ActivityChancesRouter.put("/:id/chances/:cid", Wrap(async (req, res) => {
 ActivityChancesRouter.delete("/:id/chances/:cid", Wrap(async (req, res) => {
     ensure(req.user.isAdministrator, ERR_ACCESS_DENIED);
 
-    const Activities = getManager().getRepository(Activity);
-    const activity = await Activities.findOne(req.params.id);
+    const activity = await Activity.findOne(req.params.id);
     ensure(activity, ERR_NOT_FOUND);
     ensure(activity.state === ActivityState.Approved, ERR_BAD_REQUEST);
 
-    const Chances = getManager().getRepository(Chance);
-    const chance = await Chances.findOne(req.params.cid);
+    const chance = await Chance.findOne(req.params.cid);
     ensure(chance, ERR_NOT_FOUND);
     ensure(chance.activityId === activity.id, ERR_BAD_REQUEST);
-    await Chances.remove(chance);
+    await chance.save();
 
     res.RESTEnd();
 }));
