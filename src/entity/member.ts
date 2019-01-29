@@ -1,3 +1,4 @@
+import { Max, Min } from "class-validator";
 import { BaseEntity, Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Activity } from "./activity";
 import { Team } from "./team";
@@ -29,13 +30,13 @@ export class Member extends BaseEntity {
     @Column("text")
     public comment: string;
     // 小组长审核
-    @Column()
+    @Column() @Min(0) @Max(2)
     public leaderReview: ReviewResult = ReviewResult.Pending;
     // 学生会审核
-    @Column()
+    @Column() @Min(0) @Max(2)
     public managerReview: ReviewResult = ReviewResult.Pending;
     // 管理员审核
-    @Column()
+    @Column() @Min(0) @Max(2)
     public administratorReview: ReviewResult = ReviewResult.Pending;
 
     // 对应用户

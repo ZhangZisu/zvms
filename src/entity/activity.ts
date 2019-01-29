@@ -19,8 +19,7 @@ export class Activity extends BaseEntity {
     public id: number;
 
     // 活动名称
-    @Column()
-    @MinLength(1)
+    @Column() @MinLength(1)
     public name: string;
 
     // 活动描述
@@ -28,19 +27,17 @@ export class Activity extends BaseEntity {
     public description: string;
 
     // 活动状态
-    @Column()
-    @Min(0)
-    @Max(4)
+    @Column() @Min(0) @Max(4)
     public state: ActivityState = ActivityState.PendingApprove;
 
     // 是否计算过贡献
     @Column()
-    public computed: boolean = false;
+    public isComputed: boolean = false;
 
+    // 拥有者
     @Column({ nullable: false })
     public ownerId: number;
-    @OneToOne(() => User)
-    @JoinColumn()
+    @OneToOne(() => User) @JoinColumn()
     public owner: User;
 
     // 活动报名分配

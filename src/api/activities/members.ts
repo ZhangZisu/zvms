@@ -21,7 +21,7 @@ ActivityMembersRouter.post("/:id/member", Wrap(async (req, res) => {
     const chance = await Chance.findOne({ groupId: user.groupId, activityId: activity.id });
     ensure(chance, ERR_ACCESS_DENIED);
     ensure(chance.quota, ERR_ACCESS_DENIED);
-    ensure(canOperateDuringReg(req.user, user, chance.type), ERR_ACCESS_DENIED);
+    ensure(canOperateDuringReg(req.user, user, chance.isPublic), ERR_ACCESS_DENIED);
 
     const team = await Team.findOne(req.body.teamId);
     ensure(team, ERR_NOT_FOUND);
@@ -52,7 +52,7 @@ ActivityMembersRouter.delete("/:id/member/:mid", Wrap(async (req, res) => {
     ensure(member.activityId === activity.id, ERR_BAD_REQUEST);
 
     const chance = await Chance.findOne({ groupId: member.user.groupId, activityId: activity.id });
-    ensure(canOperateDuringReg(req.user, member.user, chance.type), ERR_ACCESS_DENIED);
+    ensure(canOperateDuringReg(req.user, member.user, chance.isPublic), ERR_ACCESS_DENIED);
 
     await member.remove();
     chance.quota++;

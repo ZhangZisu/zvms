@@ -21,7 +21,7 @@ ActivityTeamsRouter.post("/:id/teams", Wrap(async (req, res) => {
     const chance = await Chance.findOne({ groupId: leader.groupId, activityId: activity.id });
     ensure(chance, ERR_ACCESS_DENIED);
     ensure(chance.quota, ERR_ACCESS_DENIED);
-    ensure(canOperateDuringReg(req.user, leader, chance.type), ERR_ACCESS_DENIED);
+    ensure(canOperateDuringReg(req.user, leader, chance.isPublic), ERR_ACCESS_DENIED);
 
     const team = new Team();
     team.leader = leader;

@@ -16,7 +16,7 @@ ActivityChancesRouter.post("/:id/chances", Wrap(async (req, res) => {
 
     const chance = new Chance();
     chance.quota = req.body.quota;
-    chance.type = req.body.type;
+    chance.isPublic = req.body.isPublic;
     chance.groupId = req.body.groupId;
     chance.activity = activity;
     await chance.save();
@@ -36,7 +36,7 @@ ActivityChancesRouter.put("/:id/chances/:cid", Wrap(async (req, res) => {
     ensure(chance, ERR_NOT_FOUND);
     ensure(chance.activityId === activity.id, ERR_BAD_REQUEST);
     chance.quota = req.body.quota;
-    chance.type = req.body.type;
+    chance.isPublic = req.body.isPublic;
     chance.groupId = req.body.groupId;
     await chance.save();
 

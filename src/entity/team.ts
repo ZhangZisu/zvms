@@ -12,8 +12,7 @@ export class Team extends BaseEntity {
     // 小组长
     @Column({ nullable: false })
     public leaderId: number;
-    @OneToOne(() => User)
-    @JoinColumn()
+    @OneToOne(() => User) @JoinColumn()
     public leader: User;
 
     // 对应活动

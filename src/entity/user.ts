@@ -10,14 +10,16 @@ export class User extends BaseEntity {
     public id: number;
 
     // 用户名
-    @Column()
-    @MinLength(1)
+    @Column() @MinLength(1)
     public name: string;
 
     // 邮箱
-    @Column()
-    @IsEmail()
+    @Column() @IsEmail()
     public email: string;
+
+    // 描述
+    @Column("text")
+    public description: string;
 
     // 密码散列
     @Column({ select: false })
@@ -46,6 +48,7 @@ export class User extends BaseEntity {
     @Column()
     public uTime: number = 0;
 
+    // 逻辑删除
     @Column()
     public removed: boolean = false;
 

@@ -9,8 +9,7 @@ export class Group extends BaseEntity {
     public id: number;
 
     // 班级名称
-    @Column()
-    @MinLength(1)
+    @Column() @MinLength(1)
     public name: string;
 
     // 下属用户
