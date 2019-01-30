@@ -33,24 +33,7 @@
 一个系统用户。
 
 ## API列表：
-- `api`
-  - `auth`
-    - `login`
-      - `POST`\
-        获取授权所需的token
-  - `users`
-    - `GET`\
-      获取所有用户
-    - `:id`
-      - `GET`\
-        获取指定用户信息
-      - `PUT`\
-        更新指定用户信息
-  - `groups`
-    - `GET`\
-      获取所有用户组
-    - `:id`
-      - `GET`\
-        获取指定用户组
-      - `PUT`\
-        更新指定用户组
+请自行阅读`/src/api`下的源代码
+
+## 设计：
+见[https://www.processon.com/view/link/5c513962e4b025fe7c8f772d](https://www.processon.com/view/link/5c513962e4b025fe7c8f772d)
