@@ -14,7 +14,7 @@ UsersRouter.get("/", Wrap(async (req, res) => {
 // 获取用户信息
 UsersRouter.get("/:id", Wrap(async (req, res) => {
     const user = await User.findOne(req.params.id, { relations: ["group", "history"] });
-    res.send(user);
+    res.RESTSend(user);
 }));
 
 UsersRouter.use(LoadUserMiddleware);
