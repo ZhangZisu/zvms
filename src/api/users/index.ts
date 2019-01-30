@@ -13,7 +13,7 @@ UsersRouter.get("/", Wrap(async (req, res) => {
 
 // 获取用户信息
 UsersRouter.get("/:id", Wrap(async (req, res) => {
-    const user = await User.findOne(req.params.id, { relations: ["group", "history"] });
+    const user = await User.findOne(req.params.id, { relations: ["history"] });
     res.RESTSend(user);
 }));
 

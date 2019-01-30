@@ -1,5 +1,4 @@
 import { Router } from "express";
-
 import { ERR_ACCESS_DENIED, ERR_NOT_FOUND } from "../../constant";
 import { Group } from "../../entity/group";
 import { ensure, LoadUserMiddleware, Wrap } from "../util";
