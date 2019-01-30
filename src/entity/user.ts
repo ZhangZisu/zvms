@@ -51,7 +51,7 @@ export class User extends BaseEntity {
 
     // 逻辑删除
     @Column()
-    public removed: boolean = false;
+    public isRemoved: boolean = false;
 
     // 所属用户组
     @Column()

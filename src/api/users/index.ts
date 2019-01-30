@@ -24,6 +24,7 @@ UsersRouter.put("/:id", Wrap(async (req, res) => {
     ensure(req.user.isAdministrator || req.userId === req.params.id, ERR_ACCESS_DENIED);
     const user = await User.findOne(req.params.id);
     user.email = req.body.email;
+    user.description = req.body.description;
     if (req.body.password) { user.setPassword(req.body.password); }
     if (req.user.isAdministrator) {
         user.name = req.body.name;
@@ -32,7 +33,7 @@ UsersRouter.put("/:id", Wrap(async (req, res) => {
         user.isAdministrator = req.body.isAdministrator;
         user.isProvider = req.body.isProvider;
         user.groupId = req.body.groupId;
-        user.removed = req.body.removed;
+        user.isRemoved = req.body.isRemoved;
     }
     await user.save();
     res.RESTEnd();
