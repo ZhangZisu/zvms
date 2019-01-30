@@ -4,7 +4,7 @@ import { Activity } from "./activity";
 import { Group } from "./group";
 
 @Entity()
-@Index(["activityId", "groupId"])
+@Index(["activityId", "groupId"], { unique: true })
 export class Chance extends BaseEntity {
     @PrimaryGeneratedColumn()
     public id: number;

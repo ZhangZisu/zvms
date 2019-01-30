@@ -14,7 +14,7 @@ GroupsRouter.get("/", Wrap(async (req, res) => {
 
 // 获取用户组信息
 GroupsRouter.get("/:id", Wrap(async (req, res) => {
-    const group = await Group.findOne(req.params.id, { relations: ["users", "chances"] });
+    const group = await Group.findOne(req.params.id, { relations: ["users", "chances", "chances.activity"] });
     ensure(group, ERR_NOT_FOUND);
     res.RESTSend(group);
 }));

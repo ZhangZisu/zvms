@@ -14,3 +14,4 @@ export const PTH_PACKAGE = join(__dirname, "..", "package.json");
 
 // Defaults
 export const DEF_DESCRIPTION = "没有描述";
+export const DEF_COMMENT = "没有评论";

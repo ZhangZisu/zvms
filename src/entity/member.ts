@@ -1,5 +1,6 @@
 import { Max, Min } from "class-validator";
 import { BaseEntity, Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { DEF_COMMENT } from "../constant";
 import { Activity } from "./activity";
 import { Team } from "./team";
 import { User } from "./user";
@@ -28,7 +29,7 @@ export class Member extends BaseEntity {
     public uTime: number = 0;
     // 小组长评价
     @Column("text")
-    public comment: string;
+    public comment: string = DEF_COMMENT;
     // 小组长审核
     @Column() @Min(0) @Max(2)
     public leaderReview: ReviewResult = ReviewResult.Pending;

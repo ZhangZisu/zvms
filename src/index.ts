@@ -2,8 +2,8 @@ import { json, urlencoded } from "body-parser";
 import express = require("express");
 import "reflect-metadata";
 import { createConnection } from "typeorm";
-import { log } from "util";
 import { ApiRouter } from "./api";
+import { log, verbose } from "./log";
 
 createConnection().then(async () => {
     const app = express();
@@ -12,6 +12,7 @@ createConnection().then(async () => {
     app.use(urlencoded({ extended: false }));
 
     app.use((req, res, next) => {
+        verbose(req.ip, req.method, req.path);
         res.header("Access-Control-Allow-Origin", "*");
         res.header("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
         res.header("Access-Control-Allow-Headers", "Content-Type, x-access-token");

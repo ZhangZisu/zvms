@@ -15,9 +15,9 @@ ActivityTeamsRouter.post("/:id/teams", Wrap(async (req, res) => {
     ensure(activity, ERR_NOT_FOUND);
     ensure(activity.state === ActivityState.Registration, ERR_BAD_REQUEST);
 
-    // 公开报名：任何人可以创建自己，团支书可以创建本班的人，管理员可以创建所有人
     const leader = await User.findOne(req.body.leaderId);
     ensure(leader, ERR_NOT_FOUND);
+    ensure(leader.id === req.body.leaderId, ERR_BAD_REQUEST);
     const chance = await Chance.findOne({ groupId: leader.groupId, activityId: activity.id });
     ensure(chance, ERR_ACCESS_DENIED);
     ensure(chance.quota, ERR_ACCESS_DENIED);

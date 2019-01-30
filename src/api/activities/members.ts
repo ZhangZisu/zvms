@@ -11,13 +11,14 @@ import { canOperateDuringReg } from "./utils";
 export const ActivityMembersRouter = Router();
 
 // 创建义工成员
-ActivityMembersRouter.post("/:id/member", Wrap(async (req, res) => {
+ActivityMembersRouter.post("/:id/members", Wrap(async (req, res) => {
     const activity = await Activity.findOne(req.params.id);
     ensure(activity, ERR_NOT_FOUND);
     ensure(activity.state === ActivityState.Registration, ERR_BAD_REQUEST);
 
     const user = await User.findOne(req.body.userId);
     ensure(user, ERR_NOT_FOUND);
+    ensure(user.id === req.body.userId, ERR_BAD_REQUEST);
     const chance = await Chance.findOne({ groupId: user.groupId, activityId: activity.id });
     ensure(chance, ERR_ACCESS_DENIED);
     ensure(chance.quota, ERR_ACCESS_DENIED);
@@ -26,6 +27,7 @@ ActivityMembersRouter.post("/:id/member", Wrap(async (req, res) => {
     const team = await Team.findOne(req.body.teamId);
     ensure(team, ERR_NOT_FOUND);
     ensure(team.activityId === activity.id, ERR_BAD_REQUEST);
+    ensure(team.id === req.body.teamId, ERR_BAD_REQUEST);
 
     const member = new Member();
     member.user = user;
@@ -40,9 +42,10 @@ ActivityMembersRouter.post("/:id/member", Wrap(async (req, res) => {
 }));
 
 // 获取义工成员
+// 个人认为没有必要。先咕着
 
 // 删除义工成员
-ActivityMembersRouter.delete("/:id/member/:mid", Wrap(async (req, res) => {
+ActivityMembersRouter.delete("/:id/members/:mid", Wrap(async (req, res) => {
     const activity = await Activity.findOne(req.params.id);
     ensure(activity, ERR_NOT_FOUND);
     ensure(activity.state === ActivityState.Registration, ERR_BAD_REQUEST);
@@ -62,7 +65,7 @@ ActivityMembersRouter.delete("/:id/member/:mid", Wrap(async (req, res) => {
 }));
 
 // 更新某个成员
-ActivityMembersRouter.put("/:id/member/:mid", Wrap(async (req, res) => {
+ActivityMembersRouter.put("/:id/members/:mid", Wrap(async (req, res) => {
     const activity = await Activity.findOne(req.params.id);
     ensure(activity, ERR_NOT_FOUND);
     ensure(activity.state === ActivityState.PendingVerify, ERR_BAD_REQUEST);

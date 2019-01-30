@@ -63,12 +63,15 @@ ActivitiesRouter.post("/:id/changestate", Wrap(async (req, res) => {
 }));
 
 // 计算贡献
-ActivitiesRouter.post("/:id/calc", Wrap(async (req, res) => {
+ActivitiesRouter.post("/:id/compute", Wrap(async (req, res) => {
     ensure(req.user.isAdministrator, ERR_ACCESS_DENIED);
 
     const activity = await Activity.findOne(req.params.id, { relations: ["members", "members.user"] });
     ensure(activity, ERR_NOT_FOUND);
     ensure(!activity.isComputed && activity.state === ActivityState.Finished, ERR_BAD_REQUEST);
+
+    activity.isComputed = true;
+    await activity.save();
 
     for (const member of activity.members) {
         if ([member.leaderReview, member.managerReview, member.administratorReview].every((review) => review === ReviewResult.Approved)) {
@@ -78,6 +81,8 @@ ActivitiesRouter.post("/:id/calc", Wrap(async (req, res) => {
             await member.user.save();
         }
     }
+
+    res.RESTEnd();
 }));
 
 // 活动批量更新
@@ -86,7 +91,7 @@ ActivitiesRouter.put("/:id/members", Wrap(async (req, res) => {
 
     const activity = await Activity.findOne(req.params.id, { relations: ["members"] });
     ensure(activity, ERR_NOT_FOUND);
-    ensure(activity.state !== ActivityState.PendingVerify, ERR_BAD_REQUEST);
+    ensure(activity.state === ActivityState.PendingVerify, ERR_BAD_REQUEST);
 
     for (const member of activity.members) {
         member.iTime = req.body.iTime;
