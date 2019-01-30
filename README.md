@@ -1,4 +1,6 @@
 # 镇海中学义工管理系统后端
+![](https://img.shields.io/github/license/ZhangZisu/zvms.svg?style=flat-square)
+![](https://img.shields.io/github/tag/ZhangZisu/zvms.svg?style=flat-square)
 
 后端开发中，API列表随时变动。
 
