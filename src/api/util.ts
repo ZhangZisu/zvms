@@ -14,7 +14,7 @@ export type RESTRequest = Request & {
     user?: User;
 };
 
-export enum RESTState {
+export enum ResponseState {
     succeeded,
     failed,
 }
@@ -31,13 +31,13 @@ export const Wrap = (handle: (req: RESTRequest, res: RESTResponse, next?: NextFu
 
 export const RESTMiddleware = (req: RESTRequest, res: RESTResponse, next: NextFunction) => {
     res.RESTSend = (value: any) => {
-        res.json({ s: RESTState.succeeded, p: value });
+        res.json({ s: ResponseState.succeeded, p: value });
     };
     res.RESTFail = (message: any) => {
-        res.json({ s: RESTState.failed, p: message });
+        res.json({ s: ResponseState.failed, p: message });
     };
     res.RESTEnd = () => {
-        res.json({ s: RESTState.succeeded });
+        res.json({ s: ResponseState.succeeded });
     };
     return next();
 };
