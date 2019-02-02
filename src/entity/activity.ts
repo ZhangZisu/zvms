@@ -1,5 +1,5 @@
 import { Max, Min, MinLength } from "class-validator";
-import { BaseEntity, Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { DEF_DESCRIPTION } from "../constant";
 import { Chance } from "./chance";
 import { Member } from "./member";
@@ -38,7 +38,7 @@ export class Activity extends BaseEntity {
     // 拥有者
     @Column({ nullable: false })
     public ownerId: number;
-    @OneToOne(() => User) @JoinColumn()
+    @ManyToOne(() => User)
     public owner: User;
 
     // 活动报名分配
