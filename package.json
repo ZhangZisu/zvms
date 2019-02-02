@@ -1,6 +1,6 @@
 {
   "name": "zvms",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Zhenhai High School Volunteer Management System",
   "main": "dist/index.js",
   "repository": "https://github.com/ZhangZisu/zvms.git",
