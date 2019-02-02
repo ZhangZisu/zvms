@@ -3,8 +3,7 @@ import { BaseEntity, Column, Entity, Index, ManyToOne, MinKey, PrimaryGeneratedC
 import { Activity } from "./activity";
 import { Group } from "./group";
 
-@Entity()
-@Index(["activityId", "groupId"], { unique: true })
+@Entity() @Index(["activityId", "groupId"], { unique: true })
 export class Chance extends BaseEntity {
     @PrimaryGeneratedColumn()
     public id: number;

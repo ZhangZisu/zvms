@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { ERR_ACCESS_DENIED, ERR_NOT_FOUND } from "../../constant";
+import { Like } from "typeorm";
+import { ERR_ACCESS_DENIED, ERR_NOT_FOUND, LIM_SEARCH_ITEMS } from "../../constant";
 import { Group } from "../../entity/group";
 import { ensure, LoadUserMiddleware, Wrap } from "../util";
 
@@ -11,9 +12,17 @@ GroupsRouter.get("/", Wrap(async (req, res) => {
     res.RESTSend(groups);
 }));
 
+GroupsRouter.get("/s", Wrap(async (req, res) => {
+    const groups = await Group.find({
+        where: { name: Like(`%${req.query.q}%`) },
+        take: LIM_SEARCH_ITEMS,
+    });
+    res.RESTSend(groups);
+}));
+
 // 获取用户组信息
 GroupsRouter.get("/:id", Wrap(async (req, res) => {
-    const group = await Group.findOne(req.params.id, { relations: ["users", "chances", "chances"] });
+    const group = await Group.findOne(req.params.id, { relations: ["users", "chances"] });
     ensure(group, ERR_NOT_FOUND);
     res.RESTSend(group);
 }));
@@ -36,7 +45,7 @@ GroupsRouter.post("/", Wrap(async (req, res) => {
     const result = [];
     for (const request of requests) {
         const group = new Group();
-        group.name = req.body.name;
+        group.name = request.name;
         await group.save();
         result.push(group.id);
     }
