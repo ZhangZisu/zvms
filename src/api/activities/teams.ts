@@ -9,6 +9,11 @@ import { canOperateDuringReg } from "./utils";
 
 export const ActivityTeamsRouter = Router();
 
+ActivityTeamsRouter.get("/:id/teams", Wrap(async (req, res) => {
+    const teams = await Team.find({ activityId: req.params.id });
+    res.RESTSend(teams);
+}));
+
 // 创建义工团队
 ActivityTeamsRouter.post("/:id/teams", Wrap(async (req, res) => {
     const activity = await Activity.findOne(req.params.id);
@@ -31,17 +36,33 @@ ActivityTeamsRouter.post("/:id/teams", Wrap(async (req, res) => {
     res.RESTEnd();
 }));
 
+ActivityTeamsRouter.get("/:id/teams/:tid", Wrap(async (req, res) => {
+    const team = await Team.findOne(req.params.tid, { relations: ["leader", "members"] });
+    ensure(team, ERR_NOT_FOUND);
+    ensure(team.activityId === req.params.id, ERR_BAD_REQUEST);
+    res.RESTSend(team);
+}));
+
+ActivityTeamsRouter.delete("/:id/teams/:tid", Wrap(async (req, res) => {
+    const team = await Team.findOne(req.params.tid, { relations: ["activity", "members"] });
+    ensure(team, ERR_NOT_FOUND);
+    ensure(team.activityId === req.params.id, ERR_BAD_REQUEST);
+    ensure(team.activity.state === ActivityState.Registration, ERR_BAD_REQUEST);
+    ensure(!team.members.length, ERR_BAD_REQUEST);
+    await team.remove();
+    res.RESTEnd();
+}));
+
 // 团队批处理操作
 ActivityTeamsRouter.put("/:id/teams/:tid/members", Wrap(async (req, res) => {
-    const activity = await Activity.findOne(req.params.id);
-    ensure(activity, ERR_NOT_FOUND);
-    ensure(activity.state === ActivityState.PendingVerify, ERR_BAD_REQUEST);
-
-    const team = await Team.findOne(req.params.tid, { relations: ["members"] });
+    const team = await Team.findOne(req.params.tid, { relations: ["activity", "members"] });
     ensure(team, ERR_NOT_FOUND);
-    ensure(team.activityId === activity.id, ERR_BAD_REQUEST);
+    ensure(team.activityId === req.params.id, ERR_BAD_REQUEST);
     ensure(req.userId === team.leaderId || req.user.isAdministrator || req.user.isManager, ERR_ACCESS_DENIED);
+    ensure(team.activity.state === ActivityState.PendingVerify, ERR_BAD_REQUEST);
 
+    // TODO
+    // 重构以支持事务
     for (const member of team.members) {
         member.comment = req.body.comment;
         member.leaderReview = req.body.leaderReview;

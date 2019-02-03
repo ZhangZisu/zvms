@@ -37,3 +37,7 @@
 
 ## 设计：
 见[https://www.processon.com/view/link/5c513962e4b025fe7c8f772d](https://www.processon.com/view/link/5c513962e4b025fe7c8f772d)
+
+## 编码规范：
+1. 强耦合实体对应的路由也应强耦合，如`chance`、`member`、`team`的操作都在`activities`路由中
+2. 引用成员`id`时，使用上下文最近的可用定义

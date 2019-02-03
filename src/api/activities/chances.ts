@@ -6,6 +6,12 @@ import { ensure, Wrap } from "../util";
 
 export const ActivityChancesRouter = Router();
 
+// 获取分配信息，可用于前端局部更新义工事件
+ActivityChancesRouter.get("/:id/chances", Wrap(async (req, res) => {
+    const chances = await Chance.find({ activityId: req.params.id });
+    res.RESTSend(chances);
+}));
+
 // 创建义工分配
 ActivityChancesRouter.post("/:id/chances", Wrap(async (req, res) => {
     ensure(req.user.isAdministrator, ERR_ACCESS_DENIED);
@@ -24,17 +30,22 @@ ActivityChancesRouter.post("/:id/chances", Wrap(async (req, res) => {
     res.RESTSend(chance.id);
 }));
 
+ActivityChancesRouter.get("/:id/chances/:cid", Wrap(async (req, res) => {
+    const chance = await Chance.findOne(req.params.cid, { relations: ["group"] });
+    ensure(chance, ERR_NOT_FOUND);
+    ensure(chance.activityId === req.params.id, ERR_BAD_REQUEST);
+    res.RESTSend(chance);
+}));
+
 // 更新义工分配
 ActivityChancesRouter.put("/:id/chances/:cid", Wrap(async (req, res) => {
     ensure(req.user.isAdministrator, ERR_ACCESS_DENIED);
 
-    const activity = await Activity.findOne(req.params.id);
-    ensure(activity, ERR_NOT_FOUND);
-    ensure(activity.state === ActivityState.Approved, ERR_BAD_REQUEST);
-
-    const chance = await Chance.findOne(req.params.cid);
+    const chance = await Chance.findOne(req.params.id, { relations: ["activity"] });
     ensure(chance, ERR_NOT_FOUND);
-    ensure(chance.activityId === activity.id, ERR_BAD_REQUEST);
+    ensure(chance.activityId === req.params.id, ERR_BAD_REQUEST);
+    ensure(chance.activity.state === ActivityState.Approved, ERR_BAD_REQUEST);
+
     chance.quota = req.body.quota;
     chance.isPublic = req.body.isPublic;
     chance.groupId = req.body.groupId;
@@ -47,13 +58,11 @@ ActivityChancesRouter.put("/:id/chances/:cid", Wrap(async (req, res) => {
 ActivityChancesRouter.delete("/:id/chances/:cid", Wrap(async (req, res) => {
     ensure(req.user.isAdministrator, ERR_ACCESS_DENIED);
 
-    const activity = await Activity.findOne(req.params.id);
-    ensure(activity, ERR_NOT_FOUND);
-    ensure(activity.state === ActivityState.Approved, ERR_BAD_REQUEST);
-
-    const chance = await Chance.findOne(req.params.cid);
+    const chance = await Chance.findOne(req.params.id, { relations: ["activity"] });
     ensure(chance, ERR_NOT_FOUND);
-    ensure(chance.activityId === activity.id, ERR_BAD_REQUEST);
+    ensure(chance.activityId === req.params.id, ERR_BAD_REQUEST);
+    ensure(chance.activity.state === ActivityState.Approved, ERR_BAD_REQUEST);
+
     await chance.remove();
 
     res.RESTEnd();
