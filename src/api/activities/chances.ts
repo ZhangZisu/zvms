@@ -54,7 +54,7 @@ ActivityChancesRouter.delete("/:id/chances/:cid", Wrap(async (req, res) => {
     const chance = await Chance.findOne(req.params.cid);
     ensure(chance, ERR_NOT_FOUND);
     ensure(chance.activityId === activity.id, ERR_BAD_REQUEST);
-    await chance.save();
+    await chance.remove();
 
     res.RESTEnd();
 }));

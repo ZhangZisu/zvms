@@ -31,7 +31,7 @@ ActivitiesRouter.post("/", Wrap(async (req, res) => {
     const activity = new Activity();
     activity.name = req.body.name;
     activity.description = req.body.description;
-    activity.owner = req.user;
+    activity.ownerId = req.body.ownerId;
     await activity.save();
     res.RESTSend(activity.id);
 }));

@@ -3,8 +3,7 @@ import { Activity } from "./activity";
 import { Member } from "./member";
 import { User } from "./user";
 
-@Entity()
-@Index(["leaderId", "activityId"], { unique: true })
+@Entity() @Index(["leaderId", "activityId"], { unique: true })
 export class Team extends BaseEntity {
     @PrimaryGeneratedColumn()
     public id: number;

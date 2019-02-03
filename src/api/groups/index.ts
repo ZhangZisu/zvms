@@ -17,6 +17,8 @@ GroupsRouter.get("/s", Wrap(async (req, res) => {
         where: { name: Like(`%${req.query.q}%`) },
         take: LIM_SEARCH_ITEMS,
     });
+    const group = await Group.findOne(req.query.q);
+    if (group) { groups.unshift(group); }
     res.RESTSend(groups);
 }));
 

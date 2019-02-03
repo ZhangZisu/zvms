@@ -11,8 +11,7 @@ export enum ReviewResult {
     Failed,
 }
 
-@Entity()
-@Index(["userId", "activityId"], { unique: true })
+@Entity() @Index(["userId", "activityId"], { unique: true })
 export class Member extends BaseEntity {
     @PrimaryGeneratedColumn()
     public id: number;
