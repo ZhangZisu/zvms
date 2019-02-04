@@ -5,12 +5,6 @@ import { Activity } from "./activity";
 import { Team } from "./team";
 import { User } from "./user";
 
-export enum ReviewResult {
-    Pending,
-    Approved,
-    Failed,
-}
-
 @Entity() @Index(["userId", "activityId"], { unique: true })
 export class Member extends BaseEntity {
     @PrimaryGeneratedColumn()
@@ -30,14 +24,14 @@ export class Member extends BaseEntity {
     @Column("text")
     public comment: string = DEF_COMMENT;
     // 小组长审核
-    @Column() @Min(0) @Max(2)
-    public leaderReview: ReviewResult = ReviewResult.Pending;
+    @Column()
+    public isLeaderApproved: boolean = false;
     // 学生会审核
-    @Column() @Min(0) @Max(2)
-    public managerReview: ReviewResult = ReviewResult.Pending;
+    @Column()
+    public isManagerApproved: boolean = false;
     // 管理员审核
-    @Column() @Min(0) @Max(2)
-    public administratorReview: ReviewResult = ReviewResult.Pending;
+    @Column()
+    public isAdminApproved: boolean = false;
 
     // 对应用户
     @Column({ nullable: false })

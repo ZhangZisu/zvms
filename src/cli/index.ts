@@ -28,7 +28,7 @@ commander
             user.name = "Administrator";
             user.email = "admin@zhangzisu.cn";
             user.setPassword("Administrator");
-            user.isAdministrator = true;
+            user.isAdmin = true;
             user.isManager = true;
             user.isProvider = true;
             user.isSecretary = true;

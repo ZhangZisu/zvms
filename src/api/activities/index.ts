@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { ERR_ACCESS_DENIED, ERR_BAD_REQUEST, ERR_NOT_FOUND } from "../../constant";
 import { Activity, ActivityState } from "../../entity/activity";
-import { Member, ReviewResult } from "../../entity/member";
 import { ensure, LoadUserMiddleware, Wrap } from "../util";
 import { ActivityChancesRouter } from "./chances";
 import { ActivityMembersRouter } from "./members";
@@ -26,7 +25,7 @@ ActivitiesRouter.use(LoadUserMiddleware);
 
 // 创建活动
 ActivitiesRouter.post("/", Wrap(async (req, res) => {
-    ensure(req.user.isAdministrator || (req.user.isProvider && req.userId === req.body.ownerId), ERR_ACCESS_DENIED);
+    ensure(req.user.isAdmin || (req.user.isProvider && req.userId === req.body.ownerId), ERR_ACCESS_DENIED);
 
     const activity = new Activity();
     activity.name = req.body.name;
@@ -38,10 +37,10 @@ ActivitiesRouter.post("/", Wrap(async (req, res) => {
 
 // 更新活动
 ActivitiesRouter.put("/:id", Wrap(async (req, res) => {
-    ensure(req.user.isAdministrator || (req.user.isProvider && req.userId === req.body.ownerId), ERR_ACCESS_DENIED);
+    ensure(req.user.isAdmin || (req.user.isProvider && req.userId === req.body.ownerId), ERR_ACCESS_DENIED);
 
     const activity = await Activity.findOne(req.params.id);
-    ensure(req.user.isAdministrator || req.userId === activity.ownerId, ERR_ACCESS_DENIED);
+    ensure(req.user.isAdmin || req.userId === activity.ownerId, ERR_ACCESS_DENIED);
     ensure(activity, ERR_NOT_FOUND);
     activity.name = req.body.name;
     activity.description = req.body.description;
@@ -52,7 +51,7 @@ ActivitiesRouter.put("/:id", Wrap(async (req, res) => {
 
 // 更改活动状态（单向）
 ActivitiesRouter.post("/:id/changestate", Wrap(async (req, res) => {
-    ensure(req.user.isAdministrator, ERR_ACCESS_DENIED);
+    ensure(req.user.isAdmin, ERR_ACCESS_DENIED);
 
     const activity = await Activity.findOne(req.params.id);
     ensure(activity, ERR_NOT_FOUND);
@@ -64,7 +63,7 @@ ActivitiesRouter.post("/:id/changestate", Wrap(async (req, res) => {
 
 // 计算贡献
 ActivitiesRouter.post("/:id/compute", Wrap(async (req, res) => {
-    ensure(req.user.isAdministrator, ERR_ACCESS_DENIED);
+    ensure(req.user.isAdmin, ERR_ACCESS_DENIED);
 
     const activity = await Activity.findOne(req.params.id, { relations: ["members", "members.user"] });
     ensure(activity, ERR_NOT_FOUND);
@@ -74,7 +73,7 @@ ActivitiesRouter.post("/:id/compute", Wrap(async (req, res) => {
     await activity.save();
 
     for (const member of activity.members) {
-        if ([member.leaderReview, member.managerReview, member.administratorReview].every((review) => review === ReviewResult.Approved)) {
+        if (member.isLeaderApproved && member.isManagerApproved && member.isAdminApproved) {
             member.user.iTime += member.iTime;
             member.user.oTime += member.oTime;
             member.user.uTime += member.uTime;
@@ -87,7 +86,7 @@ ActivitiesRouter.post("/:id/compute", Wrap(async (req, res) => {
 
 // 活动批量更新
 ActivitiesRouter.put("/:id/members", Wrap(async (req, res) => {
-    ensure(req.user.isAdministrator || req.user.isManager, ERR_ACCESS_DENIED);
+    ensure(req.user.isAdmin || req.user.isManager, ERR_ACCESS_DENIED);
 
     const activity = await Activity.findOne(req.params.id, { relations: ["members"] });
     ensure(activity, ERR_NOT_FOUND);
@@ -98,10 +97,10 @@ ActivitiesRouter.put("/:id/members", Wrap(async (req, res) => {
         member.oTime = req.body.oTime;
         member.uTime = req.body.uTime;
         member.comment = req.body.comment;
-        member.leaderReview = req.body.leaderReview;
-        member.managerReview = req.body.managerReview;
-        if (req.user.isAdministrator) {
-            member.administratorReview = req.body.administratorReview;
+        member.isLeaderApproved = req.body.isLeaderApproved;
+        member.isManagerApproved = req.body.isManagerApproved;
+        if (req.user.isAdmin) {
+            member.isAdminApproved = req.body.isAdminApproved;
         }
         await member.save();
     }

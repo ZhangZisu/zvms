@@ -8,13 +8,16 @@ export const ActivityChancesRouter = Router();
 
 // 获取分配信息，可用于前端局部更新义工事件
 ActivityChancesRouter.get("/:id/chances", Wrap(async (req, res) => {
+    ensure(req.params.id = parseInt(req.params.id, 10), ERR_BAD_REQUEST);
+
     const chances = await Chance.find({ activityId: req.params.id });
     res.RESTSend(chances);
 }));
 
 // 创建义工分配
 ActivityChancesRouter.post("/:id/chances", Wrap(async (req, res) => {
-    ensure(req.user.isAdministrator, ERR_ACCESS_DENIED);
+    ensure(req.user.isAdmin, ERR_ACCESS_DENIED);
+    ensure(req.params.id = parseInt(req.params.id, 10), ERR_BAD_REQUEST);
 
     const activity = await Activity.findOne(req.params.id);
     ensure(activity, ERR_NOT_FOUND);
@@ -31,6 +34,9 @@ ActivityChancesRouter.post("/:id/chances", Wrap(async (req, res) => {
 }));
 
 ActivityChancesRouter.get("/:id/chances/:cid", Wrap(async (req, res) => {
+    ensure(req.params.id = parseInt(req.params.id, 10), ERR_BAD_REQUEST);
+    ensure(req.params.cid = parseInt(req.params.cid, 10), ERR_BAD_REQUEST);
+
     const chance = await Chance.findOne(req.params.cid, { relations: ["group"] });
     ensure(chance, ERR_NOT_FOUND);
     ensure(chance.activityId === req.params.id, ERR_BAD_REQUEST);
@@ -39,9 +45,11 @@ ActivityChancesRouter.get("/:id/chances/:cid", Wrap(async (req, res) => {
 
 // 更新义工分配
 ActivityChancesRouter.put("/:id/chances/:cid", Wrap(async (req, res) => {
-    ensure(req.user.isAdministrator, ERR_ACCESS_DENIED);
+    ensure(req.user.isAdmin, ERR_ACCESS_DENIED);
+    ensure(req.params.id = parseInt(req.params.id, 10), ERR_BAD_REQUEST);
+    ensure(req.params.cid = parseInt(req.params.cid, 10), ERR_BAD_REQUEST);
 
-    const chance = await Chance.findOne(req.params.id, { relations: ["activity"] });
+    const chance = await Chance.findOne(req.params.cid, { relations: ["activity"] });
     ensure(chance, ERR_NOT_FOUND);
     ensure(chance.activityId === req.params.id, ERR_BAD_REQUEST);
     ensure(chance.activity.state === ActivityState.Approved, ERR_BAD_REQUEST);
@@ -56,9 +64,11 @@ ActivityChancesRouter.put("/:id/chances/:cid", Wrap(async (req, res) => {
 
 // 删除义工分配
 ActivityChancesRouter.delete("/:id/chances/:cid", Wrap(async (req, res) => {
-    ensure(req.user.isAdministrator, ERR_ACCESS_DENIED);
+    ensure(req.user.isAdmin, ERR_ACCESS_DENIED);
+    ensure(req.params.id = parseInt(req.params.id, 10), ERR_BAD_REQUEST);
+    ensure(req.params.cid = parseInt(req.params.cid, 10), ERR_BAD_REQUEST);
 
-    const chance = await Chance.findOne(req.params.id, { relations: ["activity"] });
+    const chance = await Chance.findOne(req.params.cid, { relations: ["activity"] });
     ensure(chance, ERR_NOT_FOUND);
     ensure(chance.activityId === req.params.id, ERR_BAD_REQUEST);
     ensure(chance.activity.state === ActivityState.Approved, ERR_BAD_REQUEST);

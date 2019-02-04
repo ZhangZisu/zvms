@@ -21,16 +21,18 @@ UsersRouter.use(LoadUserMiddleware);
 
 // 更新用户
 UsersRouter.put("/:id", Wrap(async (req, res) => {
-    ensure(req.user.isAdministrator || req.userId === req.params.id, ERR_ACCESS_DENIED);
+    ensure(req.params.id = parseInt(req.params.id, 10), ERR_BAD_REQUEST);
+    ensure(req.user.isAdmin || req.userId === req.params.id, ERR_ACCESS_DENIED);
+
     const user = await User.findOne(req.params.id);
     user.email = req.body.email;
     user.description = req.body.description;
     if (req.body.password) { user.setPassword(req.body.password); }
-    if (req.user.isAdministrator) {
+    if (req.user.isAdmin) {
         user.name = req.body.name;
         user.isSecretary = req.body.isSecretary;
         user.isManager = req.body.isManager;
-        user.isAdministrator = req.body.isAdministrator;
+        user.isAdmin = req.body.isAdministrator;
         user.isProvider = req.body.isProvider;
         user.groupId = req.body.groupId;
         user.isRemoved = req.body.isRemoved;
@@ -41,7 +43,7 @@ UsersRouter.put("/:id", Wrap(async (req, res) => {
 
 // （批量）创建用户
 UsersRouter.post("/", Wrap(async (req, res) => {
-    ensure(req.user.isAdministrator, ERR_ACCESS_DENIED);
+    ensure(req.user.isAdmin, ERR_ACCESS_DENIED);
     const requests = req.body instanceof Array ? req.body : [req.body];
     const result = [];
     for (const request of requests) {
@@ -51,7 +53,7 @@ UsersRouter.post("/", Wrap(async (req, res) => {
         user.setPassword(request.password);
         user.isSecretary = request.isSecretary;
         user.isManager = request.isManager;
-        user.isAdministrator = request.isAdministrator;
+        user.isAdmin = request.isAdministrator;
         user.isProvider = request.isProvider;
         user.groupId = request.groupId;
         await user.save();

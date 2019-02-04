@@ -10,12 +10,16 @@ import { canOperateDuringReg } from "./utils";
 export const ActivityTeamsRouter = Router();
 
 ActivityTeamsRouter.get("/:id/teams", Wrap(async (req, res) => {
+    ensure(req.params.id = parseInt(req.params.id, 10), ERR_BAD_REQUEST);
+
     const teams = await Team.find({ activityId: req.params.id });
     res.RESTSend(teams);
 }));
 
 // 创建义工团队
 ActivityTeamsRouter.post("/:id/teams", Wrap(async (req, res) => {
+    ensure(req.params.id = parseInt(req.params.id, 10), ERR_BAD_REQUEST);
+
     const activity = await Activity.findOne(req.params.id);
     ensure(activity, ERR_NOT_FOUND);
     ensure(activity.state === ActivityState.Registration, ERR_BAD_REQUEST);
@@ -37,6 +41,9 @@ ActivityTeamsRouter.post("/:id/teams", Wrap(async (req, res) => {
 }));
 
 ActivityTeamsRouter.get("/:id/teams/:tid", Wrap(async (req, res) => {
+    ensure(req.params.id = parseInt(req.params.id, 10), ERR_BAD_REQUEST);
+    ensure(req.params.tid = parseInt(req.params.tid, 10), ERR_BAD_REQUEST);
+
     const team = await Team.findOne(req.params.tid, { relations: ["leader", "members"] });
     ensure(team, ERR_NOT_FOUND);
     ensure(team.activityId === req.params.id, ERR_BAD_REQUEST);
@@ -44,6 +51,9 @@ ActivityTeamsRouter.get("/:id/teams/:tid", Wrap(async (req, res) => {
 }));
 
 ActivityTeamsRouter.delete("/:id/teams/:tid", Wrap(async (req, res) => {
+    ensure(req.params.id = parseInt(req.params.id, 10), ERR_BAD_REQUEST);
+    ensure(req.params.tid = parseInt(req.params.tid, 10), ERR_BAD_REQUEST);
+
     const team = await Team.findOne(req.params.tid, { relations: ["activity", "members"] });
     ensure(team, ERR_NOT_FOUND);
     ensure(team.activityId === req.params.id, ERR_BAD_REQUEST);
@@ -55,24 +65,27 @@ ActivityTeamsRouter.delete("/:id/teams/:tid", Wrap(async (req, res) => {
 
 // 团队批处理操作
 ActivityTeamsRouter.put("/:id/teams/:tid/members", Wrap(async (req, res) => {
+    ensure(req.params.id = parseInt(req.params.id, 10), ERR_BAD_REQUEST);
+    ensure(req.params.tid = parseInt(req.params.tid, 10), ERR_BAD_REQUEST);
+
     const team = await Team.findOne(req.params.tid, { relations: ["activity", "members"] });
     ensure(team, ERR_NOT_FOUND);
     ensure(team.activityId === req.params.id, ERR_BAD_REQUEST);
-    ensure(req.userId === team.leaderId || req.user.isAdministrator || req.user.isManager, ERR_ACCESS_DENIED);
+    ensure(req.userId === team.leaderId || req.user.isAdmin || req.user.isManager, ERR_ACCESS_DENIED);
     ensure(team.activity.state === ActivityState.PendingVerify, ERR_BAD_REQUEST);
 
     // TODO
     // 重构以支持事务
     for (const member of team.members) {
         member.comment = req.body.comment;
-        member.leaderReview = req.body.leaderReview;
-        if (req.user.isManager || req.user.isAdministrator) {
+        member.isLeaderApproved = req.body.isLeaderApproved;
+        if (req.user.isManager || req.user.isAdmin) {
             member.iTime = req.body.iTime;
             member.oTime = req.body.oTime;
             member.uTime = req.body.uTime;
-            member.managerReview = req.body.managerReview;
-            if (req.user.isAdministrator) {
-                member.administratorReview = req.body.administratorReview;
+            member.isManagerApproved = req.body.isManagerApproved;
+            if (req.user.isAdmin) {
+                member.isAdminApproved = req.body.isAdminApproved;
             }
         }
         await member.save();

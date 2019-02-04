@@ -11,12 +11,16 @@ import { canOperateDuringReg } from "./utils";
 export const ActivityMembersRouter = Router();
 
 ActivityMembersRouter.get("/:id/members", Wrap(async (req, res) => {
+    ensure(req.params.id = parseInt(req.params.id, 10), ERR_BAD_REQUEST);
+
     const members = await Member.find({ activityId: req.params.id });
     res.RESTSend(members);
 }));
 
 // 创建义工成员
 ActivityMembersRouter.post("/:id/members", Wrap(async (req, res) => {
+    ensure(req.params.id = parseInt(req.params.id, 10), ERR_BAD_REQUEST);
+
     const activity = await Activity.findOne(req.params.id);
     ensure(activity, ERR_NOT_FOUND);
     ensure(activity.state === ActivityState.Registration, ERR_BAD_REQUEST);
@@ -48,6 +52,9 @@ ActivityMembersRouter.post("/:id/members", Wrap(async (req, res) => {
 
 // 获取义工成员
 ActivityMembersRouter.get("/:id/members/:mid", Wrap(async (req, res) => {
+    ensure(req.params.id = parseInt(req.params.id, 10), ERR_BAD_REQUEST);
+    ensure(req.params.mid = parseInt(req.params.mid, 10), ERR_BAD_REQUEST);
+
     const member = await Member.findOne(req.params.mid, { relations: ["user"] });
     ensure(member, ERR_NOT_FOUND);
     ensure(member.activityId === req.params.id);
@@ -56,6 +63,9 @@ ActivityMembersRouter.get("/:id/members/:mid", Wrap(async (req, res) => {
 
 // 删除义工成员
 ActivityMembersRouter.delete("/:id/members/:mid", Wrap(async (req, res) => {
+    ensure(req.params.id = parseInt(req.params.id, 10), ERR_BAD_REQUEST);
+    ensure(req.params.mid = parseInt(req.params.mid, 10), ERR_BAD_REQUEST);
+
     const member = await Member.findOne(req.params.mid, { relations: ["user", "activity"] });
     ensure(member, ERR_NOT_FOUND);
     ensure(member.activityId === req.params.id, ERR_BAD_REQUEST);
@@ -73,21 +83,24 @@ ActivityMembersRouter.delete("/:id/members/:mid", Wrap(async (req, res) => {
 
 // 更新某个成员
 ActivityMembersRouter.put("/:id/members/:mid", Wrap(async (req, res) => {
+    ensure(req.params.id = parseInt(req.params.id, 10), ERR_BAD_REQUEST);
+    ensure(req.params.mid = parseInt(req.params.mid, 10), ERR_BAD_REQUEST);
+
     const member = await Member.findOne(req.params.mid, { relations: ["team", "activity"] });
     ensure(member, ERR_NOT_FOUND);
     ensure(member.activityId === req.params.id, ERR_BAD_REQUEST);
-    ensure(req.userId === member.team.leaderId || req.user.isAdministrator || req.user.isManager, ERR_ACCESS_DENIED);
+    ensure(req.userId === member.team.leaderId || req.user.isAdmin || req.user.isManager, ERR_ACCESS_DENIED);
     ensure(member.activity.state === ActivityState.PendingVerify, ERR_BAD_REQUEST);
 
     member.comment = req.body.comment;
-    member.leaderReview = req.body.leaderReview;
-    if (req.user.isManager || req.user.isAdministrator) {
+    member.isLeaderApproved = req.body.isLeaderApproved;
+    if (req.user.isManager || req.user.isAdmin) {
         member.iTime = req.body.iTime;
         member.oTime = req.body.oTime;
         member.uTime = req.body.uTime;
-        member.managerReview = req.body.managerReview;
-        if (req.user.isAdministrator) {
-            member.administratorReview = req.body.administratorReview;
+        member.isManagerApproved = req.body.isManagerApproved;
+        if (req.user.isAdmin) {
+            member.isAdminApproved = req.body.isAdminApproved;
         }
     }
     await member.save();

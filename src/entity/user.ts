@@ -35,7 +35,7 @@ export class User extends BaseEntity {
     @Column()
     public isManager: boolean = false;
     @Column()
-    public isAdministrator: boolean = false;
+    public isAdmin: boolean = false;
     @Column()
     public isProvider: boolean = false;
 

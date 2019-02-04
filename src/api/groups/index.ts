@@ -33,7 +33,7 @@ GroupsRouter.use(LoadUserMiddleware);
 
 // 修改用户组
 GroupsRouter.put("/:id", Wrap(async (req, res) => {
-    ensure(req.user.isAdministrator, ERR_ACCESS_DENIED);
+    ensure(req.user.isAdmin, ERR_ACCESS_DENIED);
     const group = await Group.findOne(req.params.id);
     group.name = req.body.name;
     await group.save();
@@ -42,7 +42,7 @@ GroupsRouter.put("/:id", Wrap(async (req, res) => {
 
 // （批量）创建用户组
 GroupsRouter.post("/", Wrap(async (req, res) => {
-    ensure(req.user.isAdministrator, ERR_ACCESS_DENIED);
+    ensure(req.user.isAdmin, ERR_ACCESS_DENIED);
     const requests = req.body instanceof Array ? req.body : [req.body];
     const result = [];
     for (const request of requests) {
