@@ -3,12 +3,12 @@ import { ActivitiesRouter } from "./activities";
 import { AuthRouter } from "./auth";
 import { GroupsRouter } from "./groups";
 import { UsersRouter } from "./users";
-import { RESTMiddleware, TokenParseMiddleware } from "./util";
+import { ApplyREST, ParseToken } from "./util";
 
 export const ApiRouter = Router();
 
-ApiRouter.use(RESTMiddleware);
-ApiRouter.use(TokenParseMiddleware);
+ApiRouter.use(ApplyREST);
+ApiRouter.use(ParseToken);
 
 ApiRouter.use("/auth", AuthRouter);
 ApiRouter.use("/users", UsersRouter);

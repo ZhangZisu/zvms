@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { getManager } from "typeorm";
 import { ERR_ACCESS_DENIED, ERR_BAD_REQUEST, ERR_NOT_FOUND } from "../../constant";
 import { Activity, ActivityState } from "../../entity/activity";
 import { Chance } from "../../entity/chance";
@@ -74,22 +75,22 @@ ActivityTeamsRouter.put("/:id/teams/:tid/members", Wrap(async (req, res) => {
     ensure(req.userId === team.leaderId || req.user.isAdmin || req.user.isManager, ERR_ACCESS_DENIED);
     ensure(team.activity.state === ActivityState.PendingVerify, ERR_BAD_REQUEST);
 
-    // TODO
-    // 重构以支持事务
-    for (const member of team.members) {
-        member.comment = req.body.comment;
-        member.isLeaderApproved = req.body.isLeaderApproved;
-        if (req.user.isManager || req.user.isAdmin) {
-            member.iTime = req.body.iTime;
-            member.oTime = req.body.oTime;
-            member.uTime = req.body.uTime;
-            member.isManagerApproved = req.body.isManagerApproved;
-            if (req.user.isAdmin) {
-                member.isAdminApproved = req.body.isAdminApproved;
+    await getManager().transaction(async (manager) => {
+        for (const member of team.members) {
+            member.comment = req.body.comment || member.comment;
+            member.isLeaderApproved = req.body.isLeaderApproved;
+            if (req.user.isManager || req.user.isAdmin) {
+                member.iTime = req.body.iTime;
+                member.oTime = req.body.oTime;
+                member.uTime = req.body.uTime;
+                member.isManagerApproved = req.body.isManagerApproved;
+                if (req.user.isAdmin) {
+                    member.isAdminApproved = req.body.isAdminApproved;
+                }
             }
+            await manager.save(member);
         }
-        await member.save();
-    }
+    });
 
     res.RESTEnd();
 }));

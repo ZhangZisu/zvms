@@ -1,14 +1,14 @@
 import { Router } from "express";
+import { getManager } from "typeorm";
 import { ERR_ACCESS_DENIED, ERR_BAD_REQUEST } from "../../constant";
 import { User } from "../../entity/user";
-import { ensure, LoadUserMiddleware, Wrap } from "../util";
+import { ensure, LoadPagination, LoadUser, Wrap } from "../util";
 
 export const UsersRouter = Router();
 
 // 获取所有用户
-UsersRouter.get("/", Wrap(async (req, res) => {
-    const users = await User.find();
-    res.RESTSend(users);
+UsersRouter.get("/", LoadPagination, Wrap(async (req, res) => {
+    res.RESTSend(await User.findAndCount(req.pagination));
 }));
 
 // 获取用户信息
@@ -17,7 +17,7 @@ UsersRouter.get("/:id", Wrap(async (req, res) => {
     res.RESTSend(user);
 }));
 
-UsersRouter.use(LoadUserMiddleware);
+UsersRouter.use(LoadUser);
 
 // 更新用户
 UsersRouter.put("/:id", Wrap(async (req, res) => {
@@ -26,13 +26,13 @@ UsersRouter.put("/:id", Wrap(async (req, res) => {
 
     const user = await User.findOne(req.params.id);
     user.email = req.body.email;
-    user.description = req.body.description;
+    user.description = req.body.description || user.description;
     if (req.body.password) { user.setPassword(req.body.password); }
     if (req.user.isAdmin) {
         user.name = req.body.name;
         user.isSecretary = req.body.isSecretary;
         user.isManager = req.body.isManager;
-        user.isAdmin = req.body.isAdministrator;
+        user.isAdmin = req.body.isAdmin;
         user.isProvider = req.body.isProvider;
         user.groupId = req.body.groupId;
         user.isRemoved = req.body.isRemoved;
@@ -45,19 +45,22 @@ UsersRouter.put("/:id", Wrap(async (req, res) => {
 UsersRouter.post("/", Wrap(async (req, res) => {
     ensure(req.user.isAdmin, ERR_ACCESS_DENIED);
     const requests = req.body instanceof Array ? req.body : [req.body];
-    const result = [];
-    for (const request of requests) {
-        const user = new User();
-        user.name = request.name;
-        user.email = request.email;
-        user.setPassword(request.password);
-        user.isSecretary = request.isSecretary;
-        user.isManager = request.isManager;
-        user.isAdmin = request.isAdministrator;
-        user.isProvider = request.isProvider;
-        user.groupId = request.groupId;
-        await user.save();
-        result.push(user.id);
-    }
+    const result: number[] = [];
+    await getManager().transaction(async (manager) => {
+        for (const request of requests) {
+            const user = new User();
+            user.name = request.name;
+            user.email = request.email;
+            user.description = request.description || user.description;
+            user.setPassword(request.password);
+            user.isSecretary = request.isSecretary;
+            user.isManager = request.isManager;
+            user.isAdmin = request.isAdmin;
+            user.isProvider = request.isProvider;
+            user.groupId = request.groupId;
+            await manager.save(user);
+            result.push(user.id);
+        }
+    });
     res.RESTSend(result);
 }));

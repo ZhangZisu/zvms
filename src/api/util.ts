@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { verify } from "jsonwebtoken";
-import { ERR_ACCESS_DENIED, ERR_UNKNOW, SEC_SECRET } from "../constant";
+import { FindManyOptions } from "typeorm";
+import { ERR_ACCESS_DENIED, ERR_BAD_REQUEST, ERR_UNKNOW, LIM_PAGINATION_ITEMS, SEC_SECRET } from "../constant";
 import { User } from "../entity/user";
 
 export type RESTResponse = Response & {
@@ -12,6 +13,7 @@ export type RESTResponse = Response & {
 export type RESTRequest = Request & {
     userId?: number;
     user?: User;
+    pagination?: FindManyOptions;
 };
 
 export enum ResponseState {
@@ -29,7 +31,7 @@ export const Wrap = (handle: (req: RESTRequest, res: RESTResponse, next?: NextFu
     };
 };
 
-export const RESTMiddleware = (req: RESTRequest, res: RESTResponse, next: NextFunction) => {
+export const ApplyREST = (req: RESTRequest, res: RESTResponse, next: NextFunction) => {
     res.RESTSend = (value: any) => {
         res.json({ s: ResponseState.succeeded, p: value });
     };
@@ -46,7 +48,7 @@ export const ensure = (expression: any, message: string = ERR_UNKNOW) => {
     if (!expression) { throw new Error(message); }
 };
 
-export const TokenParseMiddleware = Wrap((req, res, next) => {
+export const ParseToken = Wrap((req, res, next) => {
     const token = req.headers["x-access-token"] || (req.body && req.body.access_token) || (req.query && req.query.access_token);
     if (token) {
         const decoded = verify(token, SEC_SECRET) as any;
@@ -55,8 +57,22 @@ export const TokenParseMiddleware = Wrap((req, res, next) => {
     return next();
 });
 
-export const LoadUserMiddleware = Wrap(async (req, res, next) => {
+export const LoadUser = Wrap(async (req, res, next) => {
     ensure(req.userId, ERR_ACCESS_DENIED);
     ensure(req.user = await User.findOne(req.userId), ERR_ACCESS_DENIED);
+    return next();
+});
+
+export const LoadPagination = Wrap(async (req, res, next) => {
+    // tslint:disable-next-line:prefer-const
+    let { sortBy, descending, page, rowsPerPage } = req.query;
+    page = parseInt(page, 10);
+    ensure(page > 0, ERR_BAD_REQUEST);
+    rowsPerPage = parseInt(rowsPerPage, 10);
+    ensure(rowsPerPage > 0 && rowsPerPage <= LIM_PAGINATION_ITEMS, ERR_BAD_REQUEST);
+    req.pagination = {};
+    req.pagination.skip = (page - 1) * rowsPerPage;
+    req.pagination.take = rowsPerPage;
+    if (sortBy) { req.pagination.order = { [sortBy]: !!descending ? "DESC" : "ASC" }; }
     return next();
 });

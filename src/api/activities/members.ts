@@ -92,7 +92,7 @@ ActivityMembersRouter.put("/:id/members/:mid", Wrap(async (req, res) => {
     ensure(req.userId === member.team.leaderId || req.user.isAdmin || req.user.isManager, ERR_ACCESS_DENIED);
     ensure(member.activity.state === ActivityState.PendingVerify, ERR_BAD_REQUEST);
 
-    member.comment = req.body.comment;
+    member.comment = req.body.comment || member.comment;
     member.isLeaderApproved = req.body.isLeaderApproved;
     if (req.user.isManager || req.user.isAdmin) {
         member.iTime = req.body.iTime;

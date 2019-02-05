@@ -18,3 +18,4 @@ export const DEF_COMMENT = "没有评论";
 
 // Limits
 export const LIM_SEARCH_ITEMS = 15;
+export const LIM_PAGINATION_ITEMS = 256;

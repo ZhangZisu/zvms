@@ -1,7 +1,8 @@
 import { Router } from "express";
+import { getManager } from "typeorm";
 import { ERR_ACCESS_DENIED, ERR_BAD_REQUEST, ERR_NOT_FOUND } from "../../constant";
 import { Activity, ActivityState } from "../../entity/activity";
-import { ensure, LoadUserMiddleware, Wrap } from "../util";
+import { ensure, LoadPagination, LoadUser, Wrap } from "../util";
 import { ActivityChancesRouter } from "./chances";
 import { ActivityMembersRouter } from "./members";
 import { ActivityTeamsRouter } from "./teams";
@@ -9,9 +10,8 @@ import { ActivityTeamsRouter } from "./teams";
 export const ActivitiesRouter = Router();
 
 // 获取所有活动
-ActivitiesRouter.get("/", Wrap(async (req, res) => {
-    const activitys = await Activity.find();
-    res.RESTSend(activitys);
+ActivitiesRouter.get("/", LoadPagination, Wrap(async (req, res) => {
+    res.RESTSend(await Activity.findAndCount(req.pagination));
 }));
 
 // 获取指定活动及关联资源
@@ -21,7 +21,7 @@ ActivitiesRouter.get("/:id", Wrap(async (req, res) => {
     res.RESTSend(activity);
 }));
 
-ActivitiesRouter.use(LoadUserMiddleware);
+ActivitiesRouter.use(LoadUser);
 
 // 创建活动
 ActivitiesRouter.post("/", Wrap(async (req, res) => {
@@ -29,7 +29,7 @@ ActivitiesRouter.post("/", Wrap(async (req, res) => {
 
     const activity = new Activity();
     activity.name = req.body.name;
-    activity.description = req.body.description;
+    activity.description = req.body.description || activity.description;
     activity.ownerId = req.body.ownerId;
     await activity.save();
     res.RESTSend(activity.id);
@@ -43,7 +43,7 @@ ActivitiesRouter.put("/:id", Wrap(async (req, res) => {
     ensure(req.user.isAdmin || req.userId === activity.ownerId, ERR_ACCESS_DENIED);
     ensure(activity, ERR_NOT_FOUND);
     activity.name = req.body.name;
-    activity.description = req.body.description;
+    activity.description = req.body.description || activity.description;
     activity.ownerId = req.body.ownerId;
     await activity.save();
     res.RESTEnd();
@@ -69,17 +69,18 @@ ActivitiesRouter.post("/:id/compute", Wrap(async (req, res) => {
     ensure(activity, ERR_NOT_FOUND);
     ensure(!activity.isComputed && activity.state === ActivityState.Finished, ERR_BAD_REQUEST);
 
-    activity.isComputed = true;
-    await activity.save();
-
-    for (const member of activity.members) {
-        if (member.isLeaderApproved && member.isManagerApproved && member.isAdminApproved) {
-            member.user.iTime += member.iTime;
-            member.user.oTime += member.oTime;
-            member.user.uTime += member.uTime;
-            await member.user.save();
+    await getManager().transaction(async (manager) => {
+        activity.isComputed = true;
+        await manager.save(activity);
+        for (const member of activity.members) {
+            if (member.isLeaderApproved && member.isManagerApproved && member.isAdminApproved) {
+                member.user.iTime += member.iTime;
+                member.user.oTime += member.oTime;
+                member.user.uTime += member.uTime;
+                await manager.save(member.user);
+            }
         }
-    }
+    });
 
     res.RESTEnd();
 }));
@@ -92,18 +93,20 @@ ActivitiesRouter.put("/:id/members", Wrap(async (req, res) => {
     ensure(activity, ERR_NOT_FOUND);
     ensure(activity.state === ActivityState.PendingVerify, ERR_BAD_REQUEST);
 
-    for (const member of activity.members) {
-        member.iTime = req.body.iTime;
-        member.oTime = req.body.oTime;
-        member.uTime = req.body.uTime;
-        member.comment = req.body.comment;
-        member.isLeaderApproved = req.body.isLeaderApproved;
-        member.isManagerApproved = req.body.isManagerApproved;
-        if (req.user.isAdmin) {
-            member.isAdminApproved = req.body.isAdminApproved;
+    await getManager().transaction(async (manager) => {
+        for (const member of activity.members) {
+            member.iTime = req.body.iTime;
+            member.oTime = req.body.oTime;
+            member.uTime = req.body.uTime;
+            member.comment = req.body.comment || member.comment;
+            member.isLeaderApproved = req.body.isLeaderApproved;
+            member.isManagerApproved = req.body.isManagerApproved;
+            if (req.user.isAdmin) {
+                member.isAdminApproved = req.body.isAdminApproved;
+            }
+            await manager.save(member);
         }
-        await member.save();
-    }
+    });
 
     res.RESTEnd();
 }));
