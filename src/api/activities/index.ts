@@ -2,10 +2,11 @@ import { Router } from "express";
 import { getManager } from "typeorm";
 import { ERR_ACCESS_DENIED, ERR_BAD_REQUEST, ERR_NOT_FOUND } from "../../constant";
 import { Activity, ActivityState } from "../../entity/activity";
+import { Chance } from "../../entity/chance";
+import { Media } from "../../entity/media";
+import { Member } from "../../entity/member";
+import { Team } from "../../entity/team";
 import { ensure, LoadPagination, LoadUser, Wrap } from "../util";
-import { ActivityChancesRouter } from "./chances";
-import { ActivityMembersRouter } from "./members";
-import { ActivityTeamsRouter } from "./teams";
 
 export const ActivitiesRouter = Router();
 
@@ -31,6 +32,7 @@ ActivitiesRouter.post("/", Wrap(async (req, res) => {
     activity.name = req.body.name;
     activity.description = req.body.description || activity.description;
     activity.ownerId = req.body.ownerId;
+    activity.isPublic = req.body.isPublic;
     await activity.save();
     res.RESTSend(activity.id);
 }));
@@ -45,6 +47,9 @@ ActivitiesRouter.put("/:id", Wrap(async (req, res) => {
     activity.name = req.body.name;
     activity.description = req.body.description || activity.description;
     activity.ownerId = req.body.ownerId;
+    if (activity.state === ActivityState.PendingApprove) {
+        activity.isPublic = req.body.isPublic;
+    }
     await activity.save();
     res.RESTEnd();
 }));
@@ -111,6 +116,22 @@ ActivitiesRouter.put("/:id/members", Wrap(async (req, res) => {
     res.RESTEnd();
 }));
 
-ActivitiesRouter.use(ActivityChancesRouter);
-ActivitiesRouter.use(ActivityTeamsRouter);
-ActivitiesRouter.use(ActivityMembersRouter);
+ActivitiesRouter.get("/:id/chances", Wrap(async (req, res) => {
+    const chances = await Chance.find({ activityId: req.params.id });
+    res.RESTSend(chances);
+}));
+
+ActivitiesRouter.get("/:id/teams", Wrap(async (req, res) => {
+    const teams = await Team.find({ activityId: req.params.id });
+    res.RESTSend(teams);
+}));
+
+ActivitiesRouter.get("/:id/members", Wrap(async (req, res) => {
+    const members = await Member.find({ activityId: req.params.id });
+    res.RESTSend(members);
+}));
+
+ActivitiesRouter.get("/:id/medias", Wrap(async (req, res) => {
+    const medias = await Media.find({ activityId: req.params.id });
+    res.RESTSend(medias);
+}));

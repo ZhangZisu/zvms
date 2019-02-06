@@ -3,6 +3,7 @@ import { pbkdf2Sync, randomBytes } from "crypto";
 import { BaseEntity, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { DEF_DESCRIPTION } from "../constant";
 import { Group } from "./group";
+import { Media } from "./media";
 import { Member } from "./member";
 
 @Entity()
@@ -62,6 +63,10 @@ export class User extends BaseEntity {
     // 义工历史
     @OneToMany(() => Member, (member) => member.user)
     public history: Member[];
+
+    // 所属媒体资源
+    @OneToMany(() => Media, (media) => media.user)
+    public medias: Media[];
 
     public setPassword(password: string) {
         this.salt = randomBytes(16).toString("hex");

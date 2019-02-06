@@ -1,5 +1,5 @@
-import { Max, Min } from "class-validator";
-import { BaseEntity, Column, Entity, Index, ManyToOne, MinKey, PrimaryGeneratedColumn } from "typeorm";
+import { Min } from "class-validator";
+import { BaseEntity, Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Activity } from "./activity";
 import { Group } from "./group";
 
@@ -11,11 +11,6 @@ export class Chance extends BaseEntity {
     // 容量
     @Column() @Min(1)
     public quota: number;
-
-    // 是否允许学生自由报名
-    // 默认：非公开
-    @Column()
-    public isPublic: boolean = false;
 
     // 对应用户组
     @Column({ nullable: false })

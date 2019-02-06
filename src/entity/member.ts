@@ -1,7 +1,8 @@
 import { Max, Min } from "class-validator";
-import { BaseEntity, Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { DEF_COMMENT } from "../constant";
 import { Activity } from "./activity";
+import { Media } from "./media";
 import { Team } from "./team";
 import { User } from "./user";
 
@@ -50,4 +51,8 @@ export class Member extends BaseEntity {
     public activityId: number;
     @ManyToOne(() => Activity, (activity) => activity.members)
     public activity: Activity;
+
+    // 下属媒体资料
+    @OneToMany(() => Media, (media) => media.member)
+    public medias: Media[];
 }
