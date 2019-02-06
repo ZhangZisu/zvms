@@ -12,11 +12,11 @@ export class User extends BaseEntity {
     public id: number;
 
     // 用户名
-    @Column() @MinLength(1)
+    @Column({ unique: true }) @MinLength(1)
     public name: string;
 
     // 邮箱
-    @Column() @IsEmail()
+    @Column({ unique: true }) @IsEmail()
     public email: string;
 
     // 描述

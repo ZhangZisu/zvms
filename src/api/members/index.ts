@@ -11,7 +11,7 @@ import { canOperateDuringReg, ensure, LoadUser, Wrap } from "../util";
 export const MembersRouter = Router();
 
 MembersRouter.get("/:id", Wrap(async (req, res) => {
-    const member = await Member.findOne(req.params.id, { relations: ["user"] });
+    const member = await Member.findOne(req.params.id, { relations: ["user", "medias"] });
     ensure(member, ERR_NOT_FOUND);
     res.RESTSend(member);
 }));

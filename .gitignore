@@ -81,3 +81,7 @@ typings/
 
 # Typescript output dir
 dist/
+
+# Static files
+static/
+!static/.gitkeep

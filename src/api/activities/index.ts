@@ -17,7 +17,7 @@ ActivitiesRouter.get("/", LoadPagination, Wrap(async (req, res) => {
 
 // 获取指定活动及关联资源
 ActivitiesRouter.get("/:id", Wrap(async (req, res) => {
-    const activity = await Activity.findOne(req.params.id, { relations: ["chances", "teams", "members", "owner"] });
+    const activity = await Activity.findOne(req.params.id, { relations: ["chances", "teams", "members", "owner", "medias"] });
     ensure(activity, ERR_NOT_FOUND);
     res.RESTSend(activity);
 }));

@@ -3,6 +3,7 @@ import { verify } from "jsonwebtoken";
 import { FindManyOptions } from "typeorm";
 import { ERR_ACCESS_DENIED, ERR_BAD_REQUEST, ERR_UNKNOW, LIM_PAGINATION_ITEMS, SEC_SECRET } from "../constant";
 import { User } from "../entity/user";
+import { verbose } from "../log";
 
 export type RESTResponse = Response & {
     RESTSend(value: any): void;
@@ -26,6 +27,7 @@ export const Wrap = (handle: (req: RESTRequest, res: RESTResponse, next?: NextFu
         try {
             await handle(req, res, next);
         } catch (e) {
+            verbose(e.message);
             return res.RESTFail(e.message);
         }
     };

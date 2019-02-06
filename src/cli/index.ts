@@ -2,11 +2,11 @@
 import commander = require("commander");
 import { readFileSync } from "fs-extra";
 import { createConnection } from "typeorm";
-import { PTH_PACKAGE } from "../constant";
+import { PATH_PACKAGE } from "../constant";
 import { Group } from "../entity/group";
 import { User } from "../entity/user";
 
-const version = JSON.parse(readFileSync(PTH_PACKAGE).toString()).version;
+const version = JSON.parse(readFileSync(PATH_PACKAGE).toString()).version;
 
 commander
     .version(version);

@@ -1,4 +1,4 @@
-import { json, urlencoded } from "body-parser";
+import { json } from "body-parser";
 import express = require("express");
 import "reflect-metadata";
 import { createConnection } from "typeorm";
@@ -9,7 +9,6 @@ createConnection().then(async () => {
     const app = express();
 
     app.use(json());
-    app.use(urlencoded({ extended: false }));
 
     app.use((req, res, next) => {
         verbose(req.ip, req.method, req.path);
