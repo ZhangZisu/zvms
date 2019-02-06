@@ -83,5 +83,5 @@ typings/
 dist/
 
 # Static files
-static/
-!static/.gitkeep
+/static/*
+!/static/.gitkeep
