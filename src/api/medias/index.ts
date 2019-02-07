@@ -33,6 +33,7 @@ MediasRouter.post("/", uploader.single("file"), Wrap(async (req, res) => {
     ensure(req.user.isAdmin || req.user.isManager || req.userId === member.team.leaderId || req.userId === member.userId, ERR_ACCESS_DENIED);
 
     const media = new Media();
+    media.name = req.file.originalname;
     media.mimeType = req.file.mimetype;
     media.activity = member.activity;
     media.member = member;

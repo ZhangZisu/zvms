@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { getManager } from "typeorm";
-import { ERR_ACCESS_DENIED, ERR_BAD_REQUEST } from "../../constant";
+import { ERR_ACCESS_DENIED, ERR_BAD_REQUEST, ERR_NOT_FOUND } from "../../constant";
 import { User } from "../../entity/user";
 import { ensure, LoadPagination, LoadUser, Wrap } from "../util";
 
@@ -14,6 +14,7 @@ UsersRouter.get("/", LoadPagination, Wrap(async (req, res) => {
 // 获取用户信息
 UsersRouter.get("/:id", Wrap(async (req, res) => {
     const user = await User.findOne(req.params.id, { relations: ["history", "medias"] });
+    ensure(user, ERR_NOT_FOUND);
     res.RESTSend(user);
 }));
 

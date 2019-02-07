@@ -9,6 +9,9 @@ export class Media extends BaseEntity {
     public id: number;
 
     @Column()
+    public name: string;
+
+    @Column()
     public mimeType: string;
 
     // 活动-资料库

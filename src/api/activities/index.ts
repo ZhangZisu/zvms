@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getManager } from "typeorm";
+import { getManager, Like } from "typeorm";
 import { ERR_ACCESS_DENIED, ERR_BAD_REQUEST, ERR_NOT_FOUND } from "../../constant";
 import { Activity, ActivityState } from "../../entity/activity";
 import { Chance } from "../../entity/chance";

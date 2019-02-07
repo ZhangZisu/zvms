@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { verify } from "jsonwebtoken";
-import { FindManyOptions } from "typeorm";
+import { FindManyOptions, Like } from "typeorm";
 import { ERR_ACCESS_DENIED, ERR_BAD_REQUEST, ERR_UNKNOW, LIM_PAGINATION_ITEMS, SEC_SECRET } from "../constant";
 import { User } from "../entity/user";
 import { verbose } from "../log";
@@ -67,7 +67,7 @@ export const LoadUser = Wrap(async (req, res, next) => {
 
 export const LoadPagination = Wrap(async (req, res, next) => {
     // tslint:disable-next-line:prefer-const
-    let { sortBy, descending, page, rowsPerPage } = req.query;
+    let { sortBy, descending, page, rowsPerPage, search } = req.query;
     page = parseInt(page, 10);
     ensure(page > 0, ERR_BAD_REQUEST);
     rowsPerPage = parseInt(rowsPerPage, 10);
@@ -75,7 +75,14 @@ export const LoadPagination = Wrap(async (req, res, next) => {
     req.pagination = {};
     req.pagination.skip = (page - 1) * rowsPerPage;
     req.pagination.take = rowsPerPage;
-    if (sortBy) { req.pagination.order = { [sortBy]: !!descending ? "DESC" : "ASC" }; }
+    if (typeof sortBy === "string" && sortBy) {
+        req.pagination.order = { [sortBy]: !!descending ? "DESC" : "ASC" };
+    }
+    if (typeof search === "string" && search) {
+        req.pagination.where = {
+            name: Like(`%${req.query.search}%`),
+        };
+    }
     return next();
 });
 

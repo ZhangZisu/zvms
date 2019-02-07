@@ -11,16 +11,6 @@ GroupsRouter.get("/", LoadPagination, Wrap(async (req, res) => {
     res.RESTSend(await Group.findAndCount(req.pagination));
 }));
 
-GroupsRouter.get("/s", Wrap(async (req, res) => {
-    const groups = await Group.find({
-        where: { name: Like(`%${req.query.q}%`) },
-        take: LIM_SEARCH_ITEMS,
-    });
-    const group = await Group.findOne(req.query.q);
-    if (group) { groups.unshift(group); }
-    res.RESTSend(groups);
-}));
-
 // 获取用户组信息
 GroupsRouter.get("/:id", Wrap(async (req, res) => {
     const group = await Group.findOne(req.params.id, { relations: ["users", "chances"] });
