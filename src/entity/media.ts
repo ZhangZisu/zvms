@@ -1,4 +1,5 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { MinLength, validate } from "class-validator";
+import { BaseEntity, BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Activity } from "./activity";
 import { Member } from "./member";
 import { User } from "./user";
@@ -8,10 +9,10 @@ export class Media extends BaseEntity {
     @PrimaryGeneratedColumn()
     public id: number;
 
-    @Column()
+    @Column() @MinLength(1)
     public name: string;
 
-    @Column()
+    @Column() @MinLength(1)
     public mimeType: string;
 
     // 活动-资料库
@@ -26,9 +27,15 @@ export class Media extends BaseEntity {
     @ManyToOne(() => Member, (member) => member.medias)
     public member: Member;
 
-    // 用户相册？？？
+    // 用户相册
     @Column({ nullable: false })
     public userId: number;
     @ManyToOne(() => User, (user) => user.medias)
     public user: User;
+
+    @BeforeInsert() @BeforeUpdate()
+    public async validate() {
+        const errors = await validate(this);
+        if (errors.length > 0) { throw new Error("Validation failed"); }
+    }
 }

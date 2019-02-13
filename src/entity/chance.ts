@@ -1,5 +1,5 @@
-import { Min } from "class-validator";
-import { BaseEntity, Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { IsInt, Min, validate } from "class-validator";
+import { BaseEntity, BeforeInsert, BeforeUpdate, Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Activity } from "./activity";
 import { Group } from "./group";
 
@@ -9,7 +9,7 @@ export class Chance extends BaseEntity {
     public id: number;
 
     // 容量
-    @Column() @Min(1)
+    @Column() @Min(1) @IsInt()
     public quota: number;
 
     // 对应用户组
@@ -23,4 +23,10 @@ export class Chance extends BaseEntity {
     public activityId: number;
     @ManyToOne(() => Activity, (activity) => activity.chances)
     public activity: Activity;
+
+    @BeforeInsert() @BeforeUpdate()
+    public async validate() {
+        const errors = await validate(this);
+        if (errors.length > 0) { throw new Error("Validation failed"); }
+    }
 }

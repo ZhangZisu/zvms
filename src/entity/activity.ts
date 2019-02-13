@@ -1,5 +1,5 @@
-import { Max, Min, MinLength } from "class-validator";
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { IsBoolean, IsInt, Max, Min, MinLength, validate } from "class-validator";
+import { BaseEntity, BeforeInsert, BeforeUpdate, Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { DEF_DESCRIPTION } from "../constant";
 import { Chance } from "./chance";
 import { Media } from "./media";
@@ -25,20 +25,20 @@ export class Activity extends BaseEntity {
     public name: string;
 
     // 活动描述
-    @Column("text")
+    @Column("text") @MinLength(1)
     public description: string = DEF_DESCRIPTION;
 
     // 是否允许学生自由报名
     // 默认：非公开
-    @Column()
+    @Column() @IsBoolean()
     public isPublic: boolean = false;
 
     // 活动状态
-    @Column() @Min(0) @Max(4)
+    @Column() @Min(0) @Max(4) @IsInt()
     public state: ActivityState = ActivityState.PendingApprove;
 
     // 是否计算过贡献
-    @Column()
+    @Column() @IsBoolean()
     public isComputed: boolean = false;
 
     // 拥有者
@@ -62,4 +62,10 @@ export class Activity extends BaseEntity {
     // 活动所提交的资料
     @OneToMany(() => Media, (media) => media.activity)
     public medias: Media[];
+
+    @BeforeInsert() @BeforeUpdate()
+    public async validate() {
+        const errors = await validate(this);
+        if (errors.length > 0) { throw new Error("Validation failed"); }
+    }
 }

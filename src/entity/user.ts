@@ -1,6 +1,6 @@
-import { IsEmail, Max, Min, MinLength } from "class-validator";
+import { IsBoolean, IsEmail, IsInt, Max, Min, MinLength, validate } from "class-validator";
 import { pbkdf2Sync, randomBytes } from "crypto";
-import { BaseEntity, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { DEF_DESCRIPTION } from "../constant";
 import { Group } from "./group";
 import { Media } from "./media";
@@ -20,7 +20,7 @@ export class User extends BaseEntity {
     public email: string;
 
     // 描述
-    @Column("text")
+    @Column("text") @MinLength(1)
     public description: string = DEF_DESCRIPTION;
 
     // 密码散列
@@ -31,27 +31,27 @@ export class User extends BaseEntity {
     public salt: string;
 
     // 用户角色
-    @Column()
+    @Column() @IsBoolean()
     public isSecretary: boolean = false;
-    @Column()
+    @Column() @IsBoolean()
     public isManager: boolean = false;
-    @Column()
+    @Column() @IsBoolean()
     public isAdmin: boolean = false;
-    @Column()
+    @Column() @IsBoolean()
     public isProvider: boolean = false;
 
     // 内部义工时间计数
-    @Column()
+    @Column() @IsInt() @Min(0)
     public iTime: number = 0;
     // 外部义工时间计数
-    @Column()
+    @Column() @IsInt() @Min(0)
     public oTime: number = 0;
     // 万能义工时间计数
-    @Column()
+    @Column() @IsInt() @Min(0)
     public uTime: number = 0;
 
     // 逻辑删除
-    @Column()
+    @Column() @IsBoolean()
     public isRemoved: boolean = false;
 
     // 所属用户组
@@ -67,6 +67,12 @@ export class User extends BaseEntity {
     // 所属媒体资源
     @OneToMany(() => Media, (media) => media.user)
     public medias: Media[];
+
+    @BeforeInsert() @BeforeUpdate()
+    public async validate() {
+        const errors = await validate(this);
+        if (errors.length > 0) { throw new Error("Validation failed"); }
+    }
 
     public setPassword(password: string) {
         this.salt = randomBytes(16).toString("hex");

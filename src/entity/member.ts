@@ -1,5 +1,5 @@
-import { Max, Min } from "class-validator";
-import { BaseEntity, Column, Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { IsBoolean, IsInt, Max, Min, MinLength, validate } from "class-validator";
+import { BaseEntity, BeforeInsert, BeforeUpdate, Column, Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { DEF_COMMENT } from "../constant";
 import { Activity } from "./activity";
 import { Media } from "./media";
@@ -13,25 +13,25 @@ export class Member extends BaseEntity {
 
     // 义工相关信息
     // 内部义工时间计数
-    @Column()
+    @Column() @IsInt() @Min(0)
     public iTime: number = 0;
     // 外部义工时间计数
-    @Column()
+    @Column() @IsInt() @Min(0)
     public oTime: number = 0;
     // 万能义工时间计数
-    @Column()
+    @Column() @IsInt() @Min(0)
     public uTime: number = 0;
     // 小组长评价
-    @Column("text")
+    @Column("text") @MinLength(1)
     public comment: string = DEF_COMMENT;
     // 小组长审核
-    @Column()
+    @Column() @IsBoolean()
     public isLeaderApproved: boolean = false;
     // 学生会审核
-    @Column()
+    @Column() @IsBoolean()
     public isManagerApproved: boolean = false;
     // 管理员审核
-    @Column()
+    @Column() @IsBoolean()
     public isAdminApproved: boolean = false;
 
     // 对应用户
@@ -55,4 +55,10 @@ export class Member extends BaseEntity {
     // 下属媒体资料
     @OneToMany(() => Media, (media) => media.member)
     public medias: Media[];
+
+    @BeforeInsert() @BeforeUpdate()
+    public async validate() {
+        const errors = await validate(this);
+        if (errors.length > 0) { throw new Error("Validation failed"); }
+    }
 }

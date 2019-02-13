@@ -1,4 +1,5 @@
-import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { validate } from "class-validator";
+import { BaseEntity, BeforeInsert, BeforeUpdate, Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Activity } from "./activity";
 import { Member } from "./member";
 import { User } from "./user";
@@ -23,4 +24,10 @@ export class Team extends BaseEntity {
     // 下属成员
     @OneToMany(() => Member, (member) => member.team)
     public members: Member[];
+
+    @BeforeInsert() @BeforeUpdate()
+    public async validate() {
+        const errors = await validate(this);
+        if (errors.length > 0) { throw new Error("Validation failed"); }
+    }
 }
