@@ -9,7 +9,7 @@ export class Chance extends BaseEntity {
     public id: number;
 
     // 容量
-    @Column() @Min(1) @IsInt()
+    @Column() @Min(0) @IsInt()
     public quota: number;
 
     // 对应用户组
